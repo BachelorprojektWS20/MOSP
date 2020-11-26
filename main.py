@@ -1,8 +1,5 @@
+import socket
 import time
-
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-import animateResult
 from client import startSocket
 from Server import Server
 import threading
@@ -11,33 +8,36 @@ l = threading.Lock()
 l.acquire()
 
 
-def plot():
-    # Create figure for plotting
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
-    xs = []
-    ys = []
-    ani = animation.FuncAnimation(fig, animateResult.animate, fargs=(xs, ys, ax, server), interval=1500)
-    plt.show()
-
-
 server = Server()
-myList = [1,2,3]
-print( myList )
 clientTH = threading.Thread(target = startSocket, args=(1,))
 clientTH.start()
-
-server.createConnection()
-server.addItemToSend("/polyStart/")
-server.addItemToSend("T2")
-server.addItemToSend("stop")
-server.startCommunication()
-server.addItemToSend("T2")
-time.sleep(10)
-print( server.getAnswer() )
-server.addItemToSend("stop")
+serverTH = threading.Thread(target = server.runServer)
+serverTH.start()
+print("Server is Running")
+#server.createConnection()
+#server.addItemToSend("M1")
+#server.addItemToSend("stop")
+#server.startCommunication()
+#server.addItemToSend("M2")
+#time.sleep(10)
+#print( server.getAnswer() )
+#server.addItemToSend("stop")
 #plot()
 #serverTH.join()
 #clientTH.join()
+time.sleep(5)
+print("Mainconnect")
+s = socket.socket()
+s2 = socket.socket()
+# Define the port on which you want to connect
+print( "Start connecting" )
+port = 4001
+ip = '127.0.0.1'
+# connect to the server on local computer
+s.settimeout(1)
+s.connect((ip, port))
+s2.connect((ip,4002))
+time.sleep(2)
+del s, s2
 print( "Ende Main\n" )
 

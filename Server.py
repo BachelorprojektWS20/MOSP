@@ -15,22 +15,22 @@ class Server:
         print("Your Computer IP Address is:" + IPAddr)
         print("Waiting for Connection!")
         # Socket für die Kommunikation mit der Motorsteuerungsbefehle.
-        self.commandSocket = socket.socket()
-        self.commandSocket.bind(('', 4001))
-        self.commandSocket.settimeout(1)
+        self.commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.commandSocket.bind(('127.0.0.1', 4001))
         # Socket für die Kommunikation von Messdaten
-        self.dataSocket = socket.socket()
-        self.dataSocket.bind(('', 4002))
-        self.dataSocket.settimeout(1)
+        self.dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.dataSocket.bind(('127.0.0.1', 4002))
         self.conn = ''
         self.answer = '0'
+        self.exitLock = threading.Lock()
         self.isConnected = False
         self.itemsToSendLock = threading.Lock()
         self.itemsToSend = []
         self.messagesReceivedLock = threading.Lock()
         self.messagesReceived = []
 
-    #
+    # Erzeugt eine Verbindung mit einem Clienten
+    # Resetet die eingegangenen Befehle und Nachrichten zum Senden(Macht das überhaupt sinn???)
     def createConnection(self):
         if ~self.isConnected:
             print("Waiting for Connection!")
@@ -47,16 +47,49 @@ class Server:
         else:
             raise RuntimeError('There is already a connection to Client established.')
 
+    #TODO:
+    def runServer(self):
+        serverThread = threading.Thread(target=self.startCommunication())
+        serverThread.start()
+    #TODO:
     def startCommunication(self):
-
+        self.createConnection()
         if self.isConnected:
-            listeningThread = threading.Thread(target=self.startListening)
-            sendThread = threading.Thread(target=self.startSendingData)
+            listeningThread = threading.Thread(target=self.commandCommunication())
             listeningThread.start()
-            sendThread.start()
+            #sendThread = threading.Thread(target=self.startSendingData)
+            #sendThread.start()
+            print("End of startComm")
         else:
             raise RuntimeError('There is no connection to Client established')
+            #self.createConnection()
 
+    # Funktion welche für das Empfangen von Kommandos für die Motorsteuerung zuständig ist.
+    # Bei eingehendem Kommando, wird dieses auf Korrektheit im Syntaktischen überprüft.
+    # Sollte es zu einem Verbindungsausfall kommen so wird eine Neuverbindung mit einem Clienten vorgenommen( siehe
+    # exit() Funktion )
+    def commandCommunication(self):
+        # Überprüfen ob eine Verbindung besteht
+        while self.isConnected:
+            try:
+                # Empfangen eines Komandos für die Motorsteuerung
+                command = str(self.commandConnection.recv(1024).decode("utf-8"))
+                # Überprüfen des Commandos auf Syntaktische Korrektheit
+                if ~self.checkCommand(command):
+                    answer = "Invalid Command: " + command
+                else:
+                    # Anfügen des Komandos an die Komandoliste
+                    with self.messagesReceivedLock:
+                        self.messagesReceived.append(str(command))
+                    answer = "Command added to command list."
+                # Antwort für den Clienten ob das Kommando korrekt war.
+                self.commandConnection.sendall(answer.encode('utf-8'))
+            # Sollte die Verbindung getrennt werden wird ein Verbindungsaufbau begonnen.
+            except ConnectionAbortedError:
+                self.reconnect()
+
+
+    ### TODO:
     # Sendet die Daten an den verbundenen Clienten. Hier zu zählen zum eine Warnungen oder
     # Fehlermeldungen welche von der Motorsteuerung gemeldet werden. Desweiteren gehören dazu
     # auch alle Daten welche den Zustand der Motorsteuerung beschreiben.
@@ -68,20 +101,17 @@ class Server:
                 self.itemsToSend = []
             # Sending the items to the client
             for item in itemsToSendCopy:
-                self.dataconnection.sendall(item.encode('utf-8'))
-                answer = self.dataconnection.recv(1024)
-
-    def startListening(self):
-        while self.isConnected:
-            answer = self.commandConnection.recv(1024).decode("utf-8")
-            print(answer)
-            if answer == b'/endComuication/':
-                print("End Com server")
-                self.isConnected = False
-                self.dataSocket.close()
-                self.commandSocket.close()
-            with self.messagesReceivedLock:
-                self.messagesReceived.append(str(answer))
+                try:
+                    self.dataconnection.settimeout(1.0)
+                    self.dataconnection.sendall(item.encode('utf-8'))
+                    answer = self.dataconnection.recv(1024)
+                    self.dataconnection.settimeout(None)
+                except socket.timeout as e:
+                    # If the client didnt answer in time the server assumes the client is dead.
+                    # This results in a stop command and the server opens up for a new client to connect
+                    self.exit()
+                except BrokenPipeError:
+                    print("Connection was already closed, because client didn't respond")
 
 
     def addItemToSend(self,item):
@@ -89,10 +119,23 @@ class Server:
             self.itemsToSend.append(item)
 
 
+    # Beide Threads welche für die Kommunikation zwischen dem Server und Client zu ständig sind wechseln in diesen
+    # Zustand bzw. Funktion wenn eine Verbindung zum Clienten nicht mehr verfügbar ist. In dieser Funktion started den
+    # Verbindungsvorgang neu und warted auf eine neue Verbindung. Durch das Lock wird verhindert das meherere Funktion
+    # gleichzeitig eine Neuverbindung warten.
+    def reconnect(self):
+        print("Exit")
+        with self.exitLock:
+            if self.isConnected:
+                self.isConnected = False
+                self.dataconnection.shutdown(socket.SHUT_RDWR)
+                self.commandConnection.shutdown(socket.SHUT_RDWR)
+                self.createConnection()
 
-    def watchDog(self):
-        self.dataSocket.getsockname()
-
+    #TODO:
+    def checkCommand(self, command):
+        return False
+    #TODO:
     def getAnswer(self):
         try:
             return self.messagesReceived

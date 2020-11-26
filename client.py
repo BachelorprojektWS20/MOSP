@@ -14,29 +14,26 @@ def startSocket( seed ):
     port = 4001
     ip = '127.0.0.1'
     # connect to the server on local computer
+    s.settimeout(1)
     s.connect((ip, port))
-    s2.connect((ip, 4002))
+    s2.connect((ip,4002))
     # receive data from the server
-    data = b''
-    send = threading.Thread(target = sendData, args=(s,))
-    send.start()
-    while data != b'stop':
-        time.sleep(2)
-        data = s2.recv(1024)
-        if not data: break
-        print( "Server says: " + data.decode("utf-8") )
-        s2.sendall(b'Ok')
-    #del s2
-    #del s
-    print("Client done")
-def sendData( s ):
-   try:
-        t = 0
-        while t<5:
-            answer = "/polyStart/"
-            s.send(answer.encode('utf-8'))
-            time.sleep(1)
-        answer = "/endComuication/"
-        s.send(answer.encode('utf-8'))
-   except OSError:
-       print("End of Com")
+    command = b'polygonZug'
+    s.sendall(command)
+    time.sleep(0.1)
+    data = s.recv(1024)
+    print( "Server says: " + data.decode("utf-8") )
+    time.sleep(0.1)
+    command = b'polygonZug(1,0,5)'
+    s.sendall(command)
+    time.sleep(0.1)
+    data = s.recv(1024)
+    print( "Server says: " + data.decode("utf-8") )
+    del s
+    del s2
+    s = socket.socket()
+    s.settimeout(5)
+    s.connect((ip, 4002))
+    s.send(b'Hallo')
+
+    print("Ende")
