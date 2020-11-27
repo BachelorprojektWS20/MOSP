@@ -15,10 +15,10 @@ class Server:
         print("Your Computer IP Address is: " + IPAddr)
         # Socket für die Kommunikation mit der Motorsteuerungsbefehle.
         self.commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.commandSocket.bind(('127.0.0.1', 4001))
+        self.commandSocket.bind(('169.254.8.125', 4001))
         # Socket für die Kommunikation von Messdaten
         self.dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.dataSocket.bind(('127.0.0.1', 4002))
+        self.dataSocket.bind(('169.254.8.125', 4002))
         self.conn = ''
         self.answer = '0'
         self.exitLock = threading.Lock()
@@ -44,7 +44,7 @@ class Server:
             # Reseten der empfangenen Befehle
             self.messagesReceived = []
             #self.itemsToSend = []
-            print("Connected")
+            print("Connected" + str(self.commandConnection.getpeername()))
         else:
             raise RuntimeError('There is already a connection to Client established.')
 
