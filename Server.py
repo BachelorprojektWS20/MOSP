@@ -11,9 +11,8 @@ class Server:
         # put the socket into listening mode
         hostname = socket.gethostname()
         IPAddr = socket.gethostbyname(hostname)
-        print("Your Computer Name is:" + hostname)
-        print("Your Computer IP Address is:" + IPAddr)
-        print("Waiting for Connection!")
+        print("Your Computer Name is: " + hostname)
+        print("Your Computer IP Address is: " + IPAddr)
         # Socket für die Kommunikation mit der Motorsteuerungsbefehle.
         self.commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.commandSocket.bind(('127.0.0.1', 4001))
@@ -39,10 +38,12 @@ class Server:
             self.commandConnection, commandAddress = self.commandSocket.accept()
             self.dataconnection, dataAddress = self.dataSocket.accept()
             self.isConnected = True
+            self.connectionID = id(self.commandConnection)
             self.itemsToSendLock = threading.Lock()
             self.messagesReceivedLock = threading.Lock()
+            # Reseten der empfangenen Befehle
             self.messagesReceived = []
-            self.itemsToSend = []
+            #self.itemsToSend = []
             print("Connected")
         else:
             raise RuntimeError('There is already a connection to Client established.')
@@ -54,15 +55,18 @@ class Server:
     #TODO:
     def startCommunication(self):
         self.createConnection()
-        if self.isConnected:
-            listeningThread = threading.Thread(target=self.commandCommunication())
-            listeningThread.start()
-            #sendThread = threading.Thread(target=self.startSendingData)
-            #sendThread.start()
-            print("End of startComm")
-        else:
-            raise RuntimeError('There is no connection to Client established')
-            #self.createConnection()
+        while True:
+            if self.isConnected:
+                commandThread = threading.Thread(target=self.commandCommunication)
+                sendThread = threading.Thread(target=self.startSendingData)
+                commandThread.start()
+                sendThread.start()
+                commandThread.join(
+                sendThread.join()
+                )
+            else:
+                #print('There is no connection to Client established, waiting for a reconnect')
+                self.reconnect()
 
     # Funktion welche für das Empfangen von Kommandos für die Motorsteuerung zuständig ist.
     # Bei eingehendem Kommando, wird dieses auf Korrektheit im Syntaktischen überprüft.
@@ -72,7 +76,7 @@ class Server:
         # Überprüfen ob eine Verbindung besteht
         while self.isConnected:
             try:
-                # Empfangen eines Komandos für die Motorsteuerung
+                # Empfangen eines Komandos für die Motorsteuerung.
                 command = str(self.commandConnection.recv(1024).decode("utf-8"))
                 # Überprüfen des Commandos auf Syntaktische Korrektheit
                 if ~self.checkCommand(command):
@@ -86,8 +90,11 @@ class Server:
                 self.commandConnection.sendall(answer.encode('utf-8'))
             # Sollte die Verbindung getrennt werden wird ein Verbindungsaufbau begonnen.
             except ConnectionAbortedError:
+                #print("commandComm: ConnectionAbortedError")
                 self.reconnect()
-
+            except BrokenPipeError:
+                #print("commandComm: BrokenPipeEroor")
+                self.reconnect()
 
     ### TODO:
     # Sendet die Daten an den verbundenen Clienten. Hier zu zählen zum eine Warnungen oder
@@ -95,23 +102,38 @@ class Server:
     # auch alle Daten welche den Zustand der Motorsteuerung beschreiben.
     def startSendingData(self):
         while self.isConnected:
-            # Create copy of List, so it isn't locked for the duration of the for-loop
-            with self.itemsToSendLock:
-                itemsToSendCopy = self.itemsToSend
-                self.itemsToSend = []
-            # Sending the items to the client
-            for item in itemsToSendCopy:
-                try:
-                    self.dataconnection.settimeout(1.0)
+            try:
+                #print("Start Sending")
+                # Setzen eines Timeouts für die dataconnection Verbindung, um zu überprüfen ob die Client in angemessener
+                # Zeit antwortet. Tut dieser das nicht, wird ein Verbindungsneuaufbau begonnen.
+                self.dataconnection.settimeout(1.0)
+                if len(self.itemsToSend) > 0:
+                    item = self.itemsToSend[0]
+                    # Sende Daten.
                     self.dataconnection.sendall(item.encode('utf-8'))
+                    # Warte auf Bestaetigung.
                     answer = self.dataconnection.recv(1024)
-                    self.dataconnection.settimeout(None)
-                except socket.timeout as e:
-                    # If the client didnt answer in time the server assumes the client is dead.
-                    # This results in a stop command and the server opens up for a new client to connect
-                    self.exit()
-                except BrokenPipeError:
-                    print("Connection was already closed, because client didn't respond")
+                    # Entferne gesendete Daten aus der List der zu Sendenden Daten.
+                    if answer == b'Recived':
+                        with self.itemsToSendLock:
+                            self.itemsToSend.pop(0)
+                else:
+                    item = "None"
+                    self.dataconnection.sendall(item.encode('utf-8'))
+                    #print("Wait for Answer")
+                    answer = self.dataconnection.recv(1024)
+                self.dataconnection.settimeout(None)
+            except socket.timeout as e:
+                # If the client didnt answer in time the server assumes the client is dead.
+                # This results in a stop command and the server opens up for a new client to connect
+                #print("startsendingData: timeout")
+                self.reconnect()
+            except BrokenPipeError:
+                self.reconnect()
+                #print("Connection was already closed, because client didn't respond")
+            except ConnectionAbortedError:
+                #print("startsendingData: connectionAbortedError")
+                self.reconnect()
 
 
     def addItemToSend(self,item):
@@ -124,14 +146,22 @@ class Server:
     # Verbindungsvorgang neu und warted auf eine neue Verbindung. Durch das Lock wird verhindert das meherere Funktion
     # gleichzeitig eine Neuverbindung warten.
     def reconnect(self):
-        print("Exit")
+        #print("Exit")
+        currentConnectionID = self.connectionID
         with self.exitLock:
-            if self.isConnected:
+            #print("reconnect: Lock is claimed")
+            # TODO hier muss eine block eingeführt werden sodass Funktion die auf das Lock warten bei erzeugter neu
+            #  verbindung nicht einen zweiten reconnect auslösen (DONE)
+            if self.isConnected and self.connectionID == currentConnectionID:
+                #print("reconnect: Create new connection")
                 self.isConnected = False
                 self.dataconnection.shutdown(socket.SHUT_RDWR)
                 self.commandConnection.shutdown(socket.SHUT_RDWR)
                 self.createConnection()
-
+                #print("Reconected")
+            else:
+                pass
+                #print("New connection was already created")
     #TODO:
     def checkCommand(self, command):
         return False
