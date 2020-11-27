@@ -6,7 +6,7 @@ import time
 
 def listen():
     s2 = socket.socket()
-    ip = '127.0.0.1'
+    ip = '169.254.8.125'
     s2.connect((ip,4002))
     while True:
         print( s2.recv(1024) )
@@ -20,7 +20,7 @@ def startSocket( seed ):
 
     # Define the port on which you want to connect
     port = 4001
-    ip = '127.0.0.1'
+    ip = '169.254.8.125'
     # connect to the server on local computer
     s.settimeout(1)
     s.connect((ip, port))

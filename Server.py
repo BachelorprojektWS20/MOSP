@@ -5,20 +5,21 @@ import time
 
 
 class Server:
-
-    #
+    
+    
     def __init__(self):
         # put the socket into listening mode
         hostname = socket.gethostname()
         IPAddr = socket.gethostbyname(hostname)
+        
         print("Your Computer Name is: " + hostname)
         print("Your Computer IP Address is: " + IPAddr)
         # Socket für die Kommunikation mit der Motorsteuerungsbefehle.
         self.commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.commandSocket.bind(('127.0.0.1', 4001))
+        self.commandSocket.bind(('169.254.36.181', 4001))
         # Socket für die Kommunikation von Messdaten
         self.dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.dataSocket.bind(('127.0.0.1', 4002))
+        self.dataSocket.bind(('169.254.36.181', 4002))
         self.conn = ''
         self.answer = '0'
         self.exitLock = threading.Lock()
@@ -79,7 +80,7 @@ class Server:
                 # Empfangen eines Komandos für die Motorsteuerung.
                 command = str(self.commandConnection.recv(1024).decode("utf-8"))
                 # Überprüfen des Commandos auf Syntaktische Korrektheit
-                if ~self.checkCommand(command):
+                if not self.checkCommand(command):
                     answer = "Invalid Command: " + command
                 else:
                     # Anfügen des Komandos an die Komandoliste
@@ -95,7 +96,8 @@ class Server:
             except BrokenPipeError:
                 #print("commandComm: BrokenPipeEroor")
                 self.reconnect()
-
+            except ConnectionResetError:
+                self.reconnect()
     ### TODO:
     # Sendet die Daten an den verbundenen Clienten. Hier zu zählen zum eine Warnungen oder
     # Fehlermeldungen welche von der Motorsteuerung gemeldet werden. Desweiteren gehören dazu
@@ -134,6 +136,8 @@ class Server:
             except ConnectionAbortedError:
                 #print("startsendingData: connectionAbortedError")
                 self.reconnect()
+            except ConnectionResetError:
+                self.reconnect()
 
 
     def addItemToSend(self,item):
@@ -155,8 +159,11 @@ class Server:
             if self.isConnected and self.connectionID == currentConnectionID:
                 #print("reconnect: Create new connection")
                 self.isConnected = False
-                self.dataconnection.shutdown(socket.SHUT_RDWR)
-                self.commandConnection.shutdown(socket.SHUT_RDWR)
+                try:
+                    self.dataconnection.shutdown(socket.SHUT_RDWR)
+                    self.commandConnection.shutdown(socket.SHUT_RDWR)
+                except OSError:
+                    pass
                 self.createConnection()
                 #print("Reconected")
             else:
@@ -164,12 +171,12 @@ class Server:
                 #print("New connection was already created")
     #TODO:
     def checkCommand(self, command):
-        return False
+        return True
     #TODO:
     def getAnswer(self):
         try:
             return self.messagesReceived
         except:
-            print("Error"+"\n")
+            return None
 
 
