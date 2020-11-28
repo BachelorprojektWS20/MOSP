@@ -12,8 +12,8 @@ class Server:
         hostname = socket.gethostname()
         IPAddr = socket.gethostbyname(hostname)
         
-        print("Your Computer Name is: " + hostname)
-        print("Your Computer IP Address is: " + IPAddr)
+        #print("Your Computer Name is: " + hostname)
+        #print("Your Computer IP Address is: " + IPAddr)
         ip = '169.254.36.181'
         ip = '127.0.0.1'
         # Socket für die Kommunikation mit der Motorsteuerungsbefehle.
@@ -24,7 +24,7 @@ class Server:
         self.dataSocket.bind((ip, 4002))
         self.conn = ''
         self.answer = '0'
-        self.exitLock = threading.Lock()
+        self.reconnectLock = threading.Lock()
         self.isConnected = False
         self.itemsToSendLock = threading.Lock()
         self.itemsToSend = []
@@ -34,8 +34,8 @@ class Server:
     # Erzeugt eine Verbindung mit einem Clienten
     # Resetet die eingegangenen Befehle und Nachrichten zum Senden(Macht das überhaupt sinn???)
     def createConnection(self):
-        if ~self.isConnected:
-            print("Waiting for Connection!")
+        if not self.isConnected:
+            print("Server: Waiting for Connection!")
             self.commandSocket.listen()
             self.dataSocket.listen()
             self.commandConnection, commandAddress = self.commandSocket.accept()
@@ -47,7 +47,7 @@ class Server:
             # Reseten der empfangenen Befehle
             self.messagesReceived = []
             #self.itemsToSend = []
-            print("Connected")
+            print("Server: Connected")
         else:
             raise RuntimeError('There is already a connection to Client established.')
 
@@ -88,6 +88,7 @@ class Server:
                     # Anfügen des Komandos an die Komandoliste
                     with self.messagesReceivedLock:
                         self.messagesReceived.append(str(command))
+                        # TODO create Command ID for client.
                     answer = "Command added to command list."
                 # Antwort für den Clienten ob das Kommando korrekt war.
                 self.commandConnection.sendall(answer.encode('utf-8'))
@@ -154,7 +155,7 @@ class Server:
     def reconnect(self):
         #print("Exit")
         currentConnectionID = self.connectionID
-        with self.exitLock:
+        with self.reconnectLock:
             #print("reconnect: Lock is claimed")
             # TODO hier muss eine block eingeführt werden sodass Funktion die auf das Lock warten bei erzeugter neu
             #  verbindung nicht einen zweiten reconnect auslösen (DONE)

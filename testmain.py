@@ -1,6 +1,6 @@
 import socket
 import time
-from client import startSocket
+from TestClient import startSocket
 from Server import Server
 #from readsensor import Sensor
 import threading
