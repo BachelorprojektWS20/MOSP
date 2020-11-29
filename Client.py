@@ -111,6 +111,8 @@ class Client:
                 self.reconnect()
             except OSError:
                 self.reconnect()
+            except ConnectionResetError:
+                self.reconnect()
         if not self.isConnected and self.run:
             raise RuntimeError("Client is not connected to a server yet!")
 
@@ -164,7 +166,10 @@ class Client:
                 try:
                     self.commandSocket.shutdown(socket.SHUT_RDWR)
                     self.dataSocket.shutdown(socket.SHUT_RDWR)
+                    self.commandSocket = socket.socket()
+                    self.dataSocket = socket.socket()
                 except OSError:
+                    print("OSError")
                     pass
                 self.createConnection()
                 #print("Reconected")
