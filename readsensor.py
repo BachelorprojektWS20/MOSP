@@ -1,7 +1,7 @@
 import time
 import threading
 import argparse
-#from pmw3901 import PMW3901, BG_CS_FRONT_BCM, BG_CS_BACK_BCM
+from pmw3901 import PMW3901, BG_CS_FRONT_BCM, BG_CS_BACK_BCM
 
 class Sensor:
     

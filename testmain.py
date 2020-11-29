@@ -19,7 +19,8 @@ while True:
     server.addItemToSend( item )
     time.sleep(3)
     answer = server.getAnswer()
-    print(answer[len(answer)-1])
+    if len(answer)> 0:
+        print(answer[len(answer)-1])
 #clientTH = threading.Thread(target = startSocket, args=(1,))
 #clientTH.start()
 #time.sleep(10)
