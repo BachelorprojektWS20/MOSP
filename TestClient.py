@@ -13,7 +13,7 @@ def listen():
     while True:
         print( str(s2.recv(1024) ) + " : " + str(datetime.now() ))
         s2.send(b'Recived')
-        time.sleep(0.2)
+        time.sleep(0.1)
 
 
 def startSocket( seed ):
