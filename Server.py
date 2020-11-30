@@ -1,7 +1,9 @@
 # first of all import the socket library
 import socket
 import threading
+import re
 import time
+import uuid
 
 
 class Server:
@@ -9,16 +11,15 @@ class Server:
     
     def __init__(self):
         # put the socket into listening mode
-        hostname = socket.gethostname()
-        IPAddr = socket.gethostbyname(hostname)
-        
-        #print("Your Computer Name is: " + hostname)
+        __hostname = socket.gethostname()
+        IPAddr = socket.gethostbyname(__hostname)
+        #print("Your Computer Name is: " + __hostname)
         #print("Your Computer IP Address is: " + IPAddr)
-        ip = '169.254.36.181'
-        #ip = '127.0.0.1'
+        #ip = '169.254.36.181'
+        ip = ''
         # Socket für die Kommunikation mit der Motorsteuerungsbefehle.
         self.commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.commandSocket.bind((ip , 4001))
+        self.commandSocket.bind((ip, 4001))
         # Socket für die Kommunikation von Messdaten
         self.dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.dataSocket.bind((ip, 4002))
@@ -51,11 +52,12 @@ class Server:
         else:
             raise RuntimeError('There is already a connection to Client established.')
 
-    #TODO:
+    # Started den Kommunikations Thread.
     def runServer(self):
         serverThread = threading.Thread(target=self.startCommunication())
         serverThread.start()
-    #TODO:
+
+    # Started die Threads für die Kommunikation und ist eine endlosschleife, da der Server dauerhaft laufen soll.
     def startCommunication(self):
         self.createConnection()
         while True:
@@ -75,6 +77,8 @@ class Server:
     # Bei eingehendem Kommando, wird dieses auf Korrektheit im Syntaktischen überprüft.
     # Sollte es zu einem Verbindungsausfall kommen so wird eine Neuverbindung mit einem Clienten vorgenommen( siehe
     # exit() Funktion )
+    # Werden mehr als 512 Befehle übermittelt, wird das erste Element der List entfernt um die Listenlänge nicht über
+    # 512 wachsen zu lassen.
     def commandCommunication(self):
         # Überprüfen ob eine Verbindung besteht
         while self.isConnected:
@@ -85,11 +89,13 @@ class Server:
                 if not self.checkCommand(command):
                     answer = "Invalid Command: " + command
                 else:
+                    # Entfernen von Elemente aus der Kommando List
                     # Anfügen des Komandos an die Komandoliste
                     with self.messagesReceivedLock:
+                        if len(self.messagesReceived) > 512:
+                            self.messagesReceived.pop(0)
                         self.messagesReceived.append(str(command))
-                        # TODO create Command ID for client.
-                    answer = "Command added to command list."
+                    answer = "Command added to command list"
                 # Antwort für den Clienten ob das Kommando korrekt war.
                 self.commandConnection.sendall(answer.encode('utf-8'))
             # Sollte die Verbindung getrennt werden wird ein Verbindungsaufbau begonnen.
@@ -101,7 +107,7 @@ class Server:
                 self.reconnect()
             except ConnectionResetError:
                 self.reconnect()
-    ### TODO:
+
     # Sendet die Daten an den verbundenen Clienten. Hier zu zählen zum eine Warnungen oder
     # Fehlermeldungen welche von der Motorsteuerung gemeldet werden. Desweiteren gehören dazu
     # auch alle Daten welche den Zustand der Motorsteuerung beschreiben.
@@ -109,8 +115,8 @@ class Server:
         while self.isConnected:
             try:
                 #print("Start Sending")
-                # Setzen eines Timeouts für die dataconnection Verbindung, um zu überprüfen ob die Client in angemessener
-                # Zeit antwortet. Tut dieser das nicht, wird ein Verbindungsneuaufbau begonnen.
+                # Setzen eines Timeouts für die dataconnection Verbindung, um zu überprüfen ob die Client in
+                # angemessener Zeit antwortet. Tut dieser das nicht, wird ein Verbindungsneuaufbau begonnen.
                 self.dataconnection.settimeout(1.0)
                 if len(self.itemsToSend) > 0:
                     item = self.itemsToSend[0]
@@ -157,8 +163,8 @@ class Server:
         currentConnectionID = self.connectionID
         with self.reconnectLock:
             #print("reconnect: Lock is claimed")
-            # TODO hier muss eine block eingeführt werden sodass Funktion die auf das Lock warten bei erzeugter neu
-            #  verbindung nicht einen zweiten reconnect auslösen (DONE)
+            # TODOne hier muss eine block eingeführt werden sodass Funktion die auf das Lock warten bei erzeugter neu
+            #  verbindung nicht einen zweiten reconnect auslösen.
             if self.isConnected and self.connectionID == currentConnectionID:
                 #print("reconnect: Create new connection")
                 self.isConnected = False
@@ -168,14 +174,40 @@ class Server:
                 except OSError:
                     pass
                 self.createConnection()
-                #print("Reconected")
             else:
                 pass
-                #print("New connection was already created")
-    #TODO:
+
+    # Überprüft ob die Befehle korrekt syntaktisch sind.
     def checkCommand(self, command):
-        return True
-    #TODO:
+        # Accepts the following Command; ChangeSpeed(Number,Number,Number)
+        if re.match('ChangeSpeed\([0-9]+,[0-9]+,[0-9]+\)', command) is not None:
+            return True
+        # Accepts the following Command: Polygonzug[(ID,Strecke,Richtung,Max Geschwindigkeit)(..)..]
+        elif re.match('Polygonzug\[(\([0-9]+,[0-9]+,[0-9]+,[0-9]+\))+\]', command) is not None:
+            return True
+        # Accepts the followong Command: StopPolygonzug()
+        elif re.match('StopPolygonzug\(\)', command) is not None:
+            return True
+        # Accepts the following Command: Polygonzug(ID,Strecke,Richtung,Max Geschwindigkeit)
+        elif re.match('ChangePolygonzug\([0-9]+,[0-9]+,[0-9]+,[0-9]+\)', command) is not None:
+            return True
+        # Accepts the following Command: AddPolygonzug[(ID,Strecke,Richtung,Max Geschwindigkeit)(..)..]
+        elif re.match('AddPolygonzug\[(\([0-9]+,[0-9]+,[0-9]+,[0-9]+\))+\]', command) is not None:
+            return True
+        elif re.match('Mode\((Polygonzug|Direct)\)',command) is not None:
+            return True
+        # Accepts the following Command: GetSpeed(True/False)
+        elif re.match('GetSpeed\((True|False)\)',command) is not None:
+            return True
+        # Accepts the following Command: GetPolygonzug
+        elif re.match('GetPolygonzug\(\)',command) is not None:
+            return True
+        # Accepts the following Command: GetInfo(True\False)
+        elif re.match('GetInfo\((True|False)\)',command) is not None:
+            return True
+        else:
+            return False
+    #TODO:?
     def getAnswer(self):
         try:
             return self.messagesReceived

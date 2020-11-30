@@ -57,7 +57,7 @@ class Client:
                 self.connectionID = self.connectionID + 1
                 self.itemsToSendLock = threading.Lock()
                 self.messagesReceivedLock = threading.Lock()
-            except ConnectionRefusedError:
+            except ( ConnectionRefusedError, OSError ):
                 if not self.maxReconnectAttemps < self.reconnectCounter:
                     time.sleep(1)
                     self.reconnectCounter = self.reconnectCounter + 1

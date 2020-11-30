@@ -1,4 +1,7 @@
+import random
 import threading
+import uuid
+
 from Server import Server
 import time
 from Client import Client
@@ -12,13 +15,17 @@ while not client.isConnected:
 i = 0
 while True:
     time.sleep(0.25)
-    i += 1
     try:
-        client.sendCommand('Hello there!(' + str(i) + ")")
+        if i == 0:
+            id = uuid.uuid4()
+            client.sendCommand("GetInfo(True)")
+            client.sendCommand("GetSpeed(True)")
+        client.sendCommand("Polygonzug[(" +str(id)+str(random.int(0,200))+str(random.int(0,200))+str(random.int(0,200))+")]")
     except RuntimeError as e:
         print(e)
     messages = client.getAndResetReceivedMessages()
     for message in messages:
         print(message)
+    i += 1
     if i > 1024:
         i = 0
