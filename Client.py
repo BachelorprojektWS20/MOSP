@@ -9,26 +9,26 @@ class Client:
     # ip - Die ip des Gerätes auf dem die Motorsteuerung bzw. der Server lauft.
     def __init__(self, ip):
         # put the socket into listening mode
-        hostname = socket.gethostname()
+        __hostname = socket.gethostname()
         IPAddr = socket.gethostbyname(hostname)
         #print("Your Computer Name is: " + hostname)
         #print("Your Computer IP Address is: " + IPAddr)
-        self.ip = ip
+        self.__ip = ip
         # Socket für die Kommunikation mit der Motorsteuerungsbefehle.
-        self.commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.__commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Socket für die Kommunikation von Messdaten
-        self.dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.__dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         #TODO do you need a lock?
-        self.connectionID = 0
-        self.reconnectLock = threading.Lock()
-        self.isConnected = False
-        self.itemsToSendLock = threading.Lock()
-        self.itemsToSend = []
-        self.messagesReceivedLock = threading.Lock()
-        self.messagesReceived = []
-        self.reconnectCounter = 0
-        self.maxReconnectAttemps = 10
-        self.run = True
+        self.__connectionID = 0
+        self.__reconnectLock = threading.Lock()
+        self.__isConnected = False
+        self.__itemsToSendLock = threading.Lock()
+        self.__itemsToSend = []
+        self.__messagesReceivedLock = threading.Lock()
+        self.__messagesReceived = []
+        self.__reconnectCounter = 0
+        self.__maxReconnectAttemps = 10
+        self.__run = True
 
     # Falls der SErver beim ersten versuch eines Reconnects scheitert kann mit diesem Parameter gesteuert werden ob
     # dieser, bis ins unendliche einen Reconnect versucht.
@@ -40,15 +40,16 @@ class Client:
     # Erzeugt eine Verbindung mit einem Clienten
     # Sollte der Server nicht antworten so wird der Reconnect solange versucht bis das stopReconnect Flag auf
     # true gesetzt wird.
-    def createConnection(self):
+
+    def __createConnection(self):
         if not self.isConnected and self.run:
             #print("Client: Trying to Connection!")
             try:
                 self.commandSocket.settimeout(5)
-                self.commandSocket.connect((self.ip,4001))
+                self.commandSocket.connect((self.ip, 4001))
                 self.commandSocket.settimeout(None)
                 self.dataSocket.settimeout(5)
-                self.dataSocket.connect((self.ip,4002))
+                self.dataSocket.connect((self.ip, 4002))
                 self.dataSocket.settimeout(None)
                 self.isConnected = True
                 # Reseten der Connection ID
@@ -57,7 +58,7 @@ class Client:
                 self.connectionID = self.connectionID + 1
                 self.itemsToSendLock = threading.Lock()
                 self.messagesReceivedLock = threading.Lock()
-            except ( ConnectionRefusedError, OSError ):
+            except (ConnectionRefusedError, OSError):
                 if not self.maxReconnectAttemps < self.reconnectCounter:
                     time.sleep(1)
                     self.reconnectCounter = self.reconnectCounter + 1
@@ -76,7 +77,7 @@ class Client:
         serverThread.start()
 
     #TODO:
-    def startCommunication(self):
+    def __startCommunication(self):
         self.createConnection()
         while self.isConnected:
             try:
@@ -89,7 +90,7 @@ class Client:
     # Empfängt eingehende Nachrichten vom Server und bestätigt diesem diese erhalten zu haben.
     # Sollte die Verbindung unterbrochen werden beginnt diese Funktion einen Verbindungsneuaufruf mit
     # der reconnect() Funktion.
-    def dataCommunication(self):
+    def __dataCommunication(self):
         # Überprüfen ob eine Verbindung besteht
         while self.isConnected and self.run:
             try:
@@ -115,7 +116,6 @@ class Client:
                 self.reconnect()
         if not self.isConnected and self.run:
             raise RuntimeError("Client is not connected to a server yet!")
-
 
     # Sendet einen Befehl an den Server, welche an die Motorsteuerung weitergegeben werden sollen.
     # Sollte das Senden in einem Error enden welcher durch die Verbindung zum Server verursacht wird, started diese
@@ -156,7 +156,7 @@ class Client:
 
     # Endeckt eine der Kommunikationsfunktionen das die Verbindung zum Server getrennt wurde, versucht die Funktion
     # einen Neuaufbau mit diesem.
-    def reconnect(self):
+    def __reconnect(self):
         currentConnectionID = self.connectionID
         with self.reconnectLock:
             # TODONE hier muss eine block eingeführt werden sodass Funktion die auf das Lock warten bei erzeugter neu

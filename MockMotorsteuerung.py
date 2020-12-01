@@ -9,13 +9,13 @@ class MockMotorsteuerung:
     def __init__(self):
 
         self.sensor = Sensor()
-        self.readSensor = False
-        self.readInfo = False
-        self.mcommands = []
-        self.length = 0
-        self.heading = 0
-        self.speed = 0
-        self.sensorTH = threading.Thread(target = self.sensor.startMeasurment)
+        self.__readSensor = False
+        self.__readInfo = False
+        self.__mcommands = []
+        self.__length = 0
+        self.__heading = 0
+        self.__speed = 0
+        self.__sensorTH = threading.Thread(target = self.sensor.startMeasurment)
         self.sensorTH.start()
 
     def getMovement(self):
@@ -45,8 +45,9 @@ class MockMotorsteuerung:
 
     def getInfo(self):
         return str( self.length)+";"+ str(self.heading)+";"+ str(self.speed )
+
     def getMessages(self):
-        if len(self.commands) > 0:
+        if len(self.mcommands) > 0:
             if random.randint(0,2) == 1:
                 return "Error in Command" + str( self.mcommands[len(self.mcommands)- 1])
             else:

@@ -1,8 +1,4 @@
-import socket
-import time
-from TestClient import startSocket
 from Server import Server
-import threading
 
 server = Server()
 assert server.checkCommand("ChangeSpeed(100,100,100000)") is True

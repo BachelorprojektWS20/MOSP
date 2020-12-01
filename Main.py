@@ -1,8 +1,5 @@
-import socket
 import time
-from TestClient import startSocket
 from Server import Server
-from readsensor import Sensor
 from MockMotorsteuerung import MockMotorsteuerung
 import threading
 

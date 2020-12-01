@@ -18,23 +18,23 @@ class Server:
         ip = '169.254.36.181'
         #ip = ''
         # Socket für die Kommunikation mit der Motorsteuerungsbefehle.
-        self.commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.__commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.commandSocket.bind((ip, 4001))
         # Socket für die Kommunikation von Messdaten
-        self.dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.__dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.dataSocket.bind((ip, 4002))
-        self.conn = ''
-        self.answer = '0'
-        self.reconnectLock = threading.Lock()
-        self.isConnected = False
-        self.itemsToSendLock = threading.Lock()
-        self.itemsToSend = []
-        self.messagesReceivedLock = threading.Lock()
-        self.messagesReceived = []
+        self.__conn = ''
+        self.__answer = '0'
+        self.__reconnectLock = threading.Lock()
+        self.__isConnected = False
+        self.__itemsToSendLock = threading.Lock()
+        self.__itemsToSend = []
+        self.__messagesReceivedLock = threading.Lock()
+        self.__messagesReceived = []
 
     # Erzeugt eine Verbindung mit einem Clienten
     # Resetet die eingegangenen Befehle und Nachrichten zum Senden(Macht das überhaupt sinn???)
-    def createConnection(self):
+    def __createConnection(self):
         if not self.isConnected:
             print("Server: Waiting for Connection!")
             self.commandSocket.listen()
@@ -58,7 +58,7 @@ class Server:
         serverThread.start()
 
     # Started die Threads für die Kommunikation und ist eine endlosschleife, da der Server dauerhaft laufen soll.
-    def startCommunication(self):
+    def __startCommunication(self):
         self.createConnection()
         while True:
             if self.isConnected:
@@ -79,7 +79,7 @@ class Server:
     # exit() Funktion )
     # Werden mehr als 512 Befehle übermittelt, wird das erste Element der List entfernt um die Listenlänge nicht über
     # 512 wachsen zu lassen.
-    def commandCommunication(self):
+    def __commandCommunication(self):
         # Überprüfen ob eine Verbindung besteht
         while self.isConnected:
             try:
@@ -111,7 +111,7 @@ class Server:
     # Sendet die Daten an den verbundenen Clienten. Hier zu zählen zum eine Warnungen oder
     # Fehlermeldungen welche von der Motorsteuerung gemeldet werden. Desweiteren gehören dazu
     # auch alle Daten welche den Zustand der Motorsteuerung beschreiben.
-    def startSendingData(self):
+    def __startSendingData(self):
         while self.isConnected:
             try:
                 #print("Start Sending")
@@ -158,7 +158,7 @@ class Server:
     # Zustand bzw. Funktion wenn eine Verbindung zum Clienten nicht mehr verfügbar ist. In dieser Funktion started den
     # Verbindungsvorgang neu und warted auf eine neue Verbindung. Durch das Lock wird verhindert das meherere Funktion
     # gleichzeitig eine Neuverbindung warten.
-    def reconnect(self):
+    def __reconnect(self):
         #print("Exit")
         currentConnectionID = self.connectionID
         with self.reconnectLock:
@@ -178,7 +178,7 @@ class Server:
                 pass
 
     # Überprüft ob die Befehle korrekt syntaktisch sind.
-    def checkCommand(self, command):
+    def __checkCommand(self, command):
         # Accepts the following Command; ChangeSpeed(Number,Number,Number)
         if re.match('ChangeSpeed\([0-9]+,[0-9]+,[0-9]+\)', command) is not None:
             return True
