@@ -10,7 +10,7 @@ from Client import Client
 client = Client('169.254.36.181')
 clientTH = threading.Thread(target=client.runClient)
 clientTH.start()
-while not client.isConnected:
+while not client.__isConnected:
     time.sleep(0.1)
 i = 0
 while True:
