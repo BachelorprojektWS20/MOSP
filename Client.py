@@ -35,7 +35,7 @@ class Client:
     def setmaxReconnectAttemps(self, maxReconnectAttemps):
         self.__maxReconnectAttemps = maxReconnectAttemps
 
-    def getIsConnected(self):
+    def isIsConnected(self):
         return self.__isConnected
     # Erzeugt eine Verbindung mit einem Clienten
     # Sollte der Server nicht antworten so wird der Reconnect solange versucht bis das stopReconnect Flag auf

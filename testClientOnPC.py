@@ -10,7 +10,7 @@ from Client import Client
 client = Client('169.254.36.181')
 clientTH = threading.Thread(target=client.runClient)
 clientTH.start()
-while not client.__isConnected:
+while not client.isIsConnected():
     time.sleep(0.1)
 i = 0
 while True:
@@ -22,6 +22,9 @@ while True:
             client.sendCommand("GetInfo(True)")
             client.sendCommand("GetSpeed(True)")
         client.sendCommand(ti)
+        if i == 5:
+            client.sendCommand("GetInfo(False)")
+            client.sendCommand("GetSpeed(False)")
     except RuntimeError as e:
         print(e)
     messages = client.getAndResetReceivedMessages()
@@ -29,5 +32,5 @@ while True:
 
     i += 1
     time.sleep(2)
-    if i > 1024:
+    if i > 10:
         i = 0
