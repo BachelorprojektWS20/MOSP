@@ -18,4 +18,4 @@ while True:
     time.sleep(1)
     answer = server.getAnswer()
     if len(answer)> 0:
-        print(answer[len(answer)-1])
+        print(answer)

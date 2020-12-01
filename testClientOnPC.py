@@ -14,18 +14,20 @@ while not client.isConnected:
     time.sleep(0.1)
 i = 0
 while True:
+    ti="Polygonzug[(" +str(i)+","+str(random.randint(0,200))+","+str(random.randint(0,200))+","+str(random.randint(0,200))+")]"
     time.sleep(0.25)
     try:
         if i == 0:
             id = uuid.uuid4()
             client.sendCommand("GetInfo(True)")
             client.sendCommand("GetSpeed(True)")
-        client.sendCommand("Polygonzug[(" +str(id)+str(random.int(0,200))+str(random.int(0,200))+str(random.int(0,200))+")]")
+        client.sendCommand(ti)
     except RuntimeError as e:
         print(e)
     messages = client.getAndResetReceivedMessages()
-    for message in messages:
-        print(message)
+    print(messages)
+
     i += 1
+    time.sleep(2)
     if i > 1024:
         i = 0

@@ -123,6 +123,7 @@ class Client:
     def sendCommand(self, command):
         if self.isConnected and self.run:
             try:
+                print(command)
                 # Setzen eines Timeouts für die Verbindung, um zu überprüfen ob der Server in angemessener
                 # Zeit antwortet. Tut dieser das nicht, wird ein Verbindungsneuaufbau begonnen.
                 self.commandSocket.settimeout(1.0)
@@ -137,7 +138,7 @@ class Client:
             # Mögliche Fehler welche zu einer Neuverbindung zwischen Client und Server führen.
             except socket.timeout as e:
                 # If the server didn't answer in time, the client tries to reconnect to the server.
-                #print("startsendingData: timeout")
+
                 self.reconnect()
             except BrokenPipeError:
                 self.reconnect()
