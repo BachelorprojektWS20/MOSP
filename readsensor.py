@@ -1,4 +1,5 @@
 import time
+from timeit import default_timer as timer
 import threading
 import argparse
 from pmw3901 import PMW3901, BG_CS_FRONT_BCM, BG_CS_BACK_BCM
@@ -26,6 +27,7 @@ class Sensor:
         self.flo.set_rotation(args.rotation)
         self.tx = 0
         self.ty = 0
+        self.timeStart = timer()
         
     def startMeasurment(self):
         try:
@@ -41,9 +43,11 @@ class Sensor:
         except KeyboardInterrupt:
             pass
     def getMeasurment(self):
-        x = self.ty
-        y = self.tx
         with self.meswertLock:
+            measuretime = timer() - self.timeStart
+            x = self.ty
+            y = self.tx
+            self.timeStart = timer()
             self.tx = 0
             self.ty = 0
-        return ( x, y )
+        return ( measuretime, x, y )

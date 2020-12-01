@@ -8,9 +8,9 @@ server = Server()
 serverTH = threading.Thread(target = server.runServer)
 serverTH.start()
 while True:
-    if motorsteuerung.readSensor:
+    if motorsteuerung.isReadSensor():
         server.addItemToSend( str( motorsteuerung.getMovement() ) )
-    if motorsteuerung.readInfo:
+    if motorsteuerung.isReadInfo():
         server.addItemToSend( motorsteuerung.getInfo() )
     #if motorsteuerung.getMessages() != None:
         #for mes in motorsteuerung.getMessages():

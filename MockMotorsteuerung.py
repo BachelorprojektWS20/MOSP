@@ -15,21 +15,25 @@ class MockMotorsteuerung:
         self.__length = 0
         self.__heading = 0
         self.__speed = 0
-        self.__sensorTH = threading.Thread(target = self.sensor.startMeasurment)
+        self.sensorTH = threading.Thread(target = self.sensor.startMeasurment)
         self.sensorTH.start()
 
+    def isReadSensor(self):
+        return self.__readSensor
+    def isReadInfo(self):
+        return self.__readInfo
     def getMovement(self):
         return self.sensor.getMeasurment()
 
     def addCommands(self, command):
             if re.match('GetInfo\((True)\)',command):
-                self.readInfo = True
+                self.__readInfo = True
             if re.match('GetInfo\((False)\)',command):
-                self.readInfo = False
+                self.__readInfo = False
             if re.match('GetSpeed\((True)\)',command):
-                    self.readSensor = True
+                    self.__readSensor = True
             if re.match('GetSpeed\((False)\)',command):
-                self.readSensor = False
+                self.__readSensor = False
             if re.match('Polygonzug\[(\([0-9]+,[0-9]+,[0-9]+,[0-9]+\))+\]', command):
                 split = re.split('\[',command)
                 split = re.split(',',split[1])
@@ -38,13 +42,13 @@ class MockMotorsteuerung:
                     split[i] = split[i].replace(']',"")
                     split[i] = split[i].replace('(',"")
                     split[i] = split[i].replace(')',"")
-                self.length = split[1]
-                self.heading = split[2]
-                self.speed = split[3]
-            self.mcommands.append(command)
+                self.__length = split[1]
+                self.__heading = split[2]
+                self.__speed = split[3]
+            self.__mcommands.append(command)
 
     def getInfo(self):
-        return str( self.length)+";"+ str(self.heading)+";"+ str(self.speed )
+        return str( self.__length)+";"+ str(self.__heading)+";"+ str(self.__speed )
 
     def getMessages(self):
         if len(self.mcommands) > 0:
