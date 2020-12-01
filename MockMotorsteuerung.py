@@ -6,12 +6,12 @@ import re
 
 class MockMotorsteuerung:
 
-    def __init__(self, ip):
+    def __init__(self):
 
         self.sensor = Sensor()
         self.readSensor = False
         self.readInfo = False
-        self.commands = []
+        self.mcommands = []
         self.length = 0
         self.heading = 0
         self.speed = 0
@@ -19,10 +19,9 @@ class MockMotorsteuerung:
         self.sensorTH.start()
 
     def getMovement(self):
-        return self.sensor.startMeasurment()
+        return self.sensor.getMeasurment()
 
     def addCommands(self, command):
-        for command in command:
             if re.match('GetInfo\((True)\)',command):
                 self.readInfo = True
             if re.match('GetInfo\((False)\)',command):
@@ -42,12 +41,13 @@ class MockMotorsteuerung:
                 self.length = split[1]
                 self.heading = split[2]
                 self.speed = split[3]
-            self.commands.append(command)
+            self.mcommands.append(command)
 
     def getInfo(self):
-        return str( self.length, self.heading, self.speed )
+        return str( self.length)+";"+ str(self.heading)+";"+ str(self.speed )
     def getMessages(self):
-        if random.randint(0,2) == 1:
-            return "Error in Command" + str( self.commands[len(self.commands - 1)])
-        else:
-            return "Everything works fine."
+        if len(self.commands) > 0:
+            if random.randint(0,2) == 1:
+                return "Error in Command" + str( self.mcommands[len(self.mcommands)- 1])
+            else:
+                return "Everything works fine."

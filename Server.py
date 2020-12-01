@@ -15,8 +15,8 @@ class Server:
         IPAddr = socket.gethostbyname(__hostname)
         #print("Your Computer Name is: " + __hostname)
         #print("Your Computer IP Address is: " + IPAddr)
-        #ip = '169.254.36.181'
-        ip = ''
+        ip = '169.254.36.181'
+        #ip = ''
         # Socket für die Kommunikation mit der Motorsteuerungsbefehle.
         self.commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.commandSocket.bind((ip, 4001))
@@ -209,8 +209,11 @@ class Server:
             return False
     #TODO:?
     def getAnswer(self):
+        with self.messagesReceivedLock:
+            mess = self.messagesReceived
+            self.messagesReceived = []
         try:
-            return self.messagesReceived
+            return mess
         except:
             return None
 
