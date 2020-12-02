@@ -5,7 +5,7 @@ import re
 import time
 import uuid
 
-
+# Servermodul für die Motorsteuerung.
 class Server:
     
     
