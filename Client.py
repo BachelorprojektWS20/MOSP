@@ -62,7 +62,7 @@ class Client:
                 if not self.__maxReconnectAttemps < self.__reconnectCounter:
                     time.sleep(1)
                     self.__reconnectCounter = self.__reconnectCounter + 1
-                    self.createConnection()
+                    self.__createConnection()
                 else:
                     self.__reconnectCounter = 0
                     raise RuntimeError("Can't connect to Server, check if Server is running. Attempted " +
@@ -134,11 +134,10 @@ class Client:
                 answer = self.__commandSocket.recv(1024)
                 self.__commandSocket.settimeout(None)
                 # Rückgabe der Antwort des Servers
-                return answer
+                return answer.decode('utf-8')
             # Mögliche Fehler welche zu einer Neuverbindung zwischen Client und Server führen.
             except socket.timeout as e:
                 # If the server didn't answer in time, the client tries to reconnect to the server.
-
                 self.__reconnect()
             except BrokenPipeError:
                 self.__reconnect()
