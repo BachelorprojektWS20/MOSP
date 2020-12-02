@@ -96,7 +96,7 @@ class Server:
                             self.__messagesReceived.pop(0)
                         id = uuid.uuid4()
                         self.__messagesReceived.append((id, str(command)))
-                    answer = "Command added to command list, with ID:" + str(id)
+                    answer = str(id)
                 # Antwort für den Clienten ob das Kommando korrekt war.
                 self.__commandConnection.sendall(answer.encode('utf-8'))
             # Sollte die Verbindung getrennt werden wird ein Verbindungsaufbau begonnen.

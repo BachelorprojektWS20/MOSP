@@ -25,8 +25,8 @@ class MockMotorsteuerung:
     def getMovement(self):
         return self.sensor.getMeasurment()
 
-    def addCommands(self, command):
-        command = command[1]
+    def addCommands(self, commandWithID):
+        command = commandWithID[1]
         if re.match('GetInfo\((True)\)',command):
             self.__readInfo = True
         if re.match('GetInfo\((False)\)',command):
@@ -46,14 +46,14 @@ class MockMotorsteuerung:
             self.__length = split[1]
             self.__heading = split[2]
             self.__speed = split[3]
-        self.__mcommands.append(command)
+        self.__mcommands.append(commandWithID)
 
     def getInfo(self):
         return str( self.__length)+";"+ str(self.__heading)+";"+ str(self.__speed )
 
     def getMessages(self):
-        if len(self.mcommands) > 0:
+        if len(self.__mcommands) > 0:
             if random.randint(0,2) == 1:
-                return "Error in Command" + str( self.mcommands[len(self.mcommands)- 1])
+                return "Error in Command: " + str( self.__mcommands[len(self.__mcommands)- 1][0] )
             else:
                 return "Everything works fine."

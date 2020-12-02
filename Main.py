@@ -12,9 +12,8 @@ while True:
         server.addItemToSend( str( motorsteuerung.getMovement() ) )
     if motorsteuerung.isReadInfo():
         server.addItemToSend( motorsteuerung.getInfo() )
-    #if motorsteuerung.getMessages() != None:
-        #for mes in motorsteuerung.getMessages():
-            #server.addItemToSend( mes )
+    if motorsteuerung.getMessages() != None:
+        server.addItemToSend( motorsteuerung.getMessages() )
     answers = server.getAnswer()
     time.sleep(1)
     for answer in answers:
