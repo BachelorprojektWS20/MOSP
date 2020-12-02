@@ -26,26 +26,27 @@ class MockMotorsteuerung:
         return self.sensor.getMeasurment()
 
     def addCommands(self, command):
-            if re.match('GetInfo\((True)\)',command):
-                self.__readInfo = True
-            if re.match('GetInfo\((False)\)',command):
-                self.__readInfo = False
-            if re.match('GetSpeed\((True)\)',command):
-                    self.__readSensor = True
-            if re.match('GetSpeed\((False)\)',command):
-                self.__readSensor = False
-            if re.match('Polygonzug\[(\([0-9]+,[0-9]+,[0-9]+,[0-9]+\))+\]', command):
-                split = re.split('\[',command)
-                split = re.split(',',split[1])
-                for i in range(4):
-                    split[i] = split[i].replace('[',"")
-                    split[i] = split[i].replace(']',"")
-                    split[i] = split[i].replace('(',"")
-                    split[i] = split[i].replace(')',"")
-                self.__length = split[1]
-                self.__heading = split[2]
-                self.__speed = split[3]
-            self.__mcommands.append(command)
+        command = command[1]
+        if re.match('GetInfo\((True)\)',command):
+            self.__readInfo = True
+        if re.match('GetInfo\((False)\)',command):
+            self.__readInfo = False
+        if re.match('GetSpeed\((True)\)',command):
+                self.__readSensor = True
+        if re.match('GetSpeed\((False)\)',command):
+            self.__readSensor = False
+        if re.match('Polygonzug\[(\([0-9]+,[0-9]+,[0-9]+,[0-9]+\))+\]', command):
+            split = re.split('\[',command)
+            split = re.split(',',split[1])
+            for i in range(4):
+                split[i] = split[i].replace('[',"")
+                split[i] = split[i].replace(']',"")
+                split[i] = split[i].replace('(',"")
+                split[i] = split[i].replace(')',"")
+            self.__length = split[1]
+            self.__heading = split[2]
+            self.__speed = split[3]
+        self.__mcommands.append(command)
 
     def getInfo(self):
         return str( self.__length)+";"+ str(self.__heading)+";"+ str(self.__speed )
