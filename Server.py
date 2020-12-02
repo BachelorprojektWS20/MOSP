@@ -94,8 +94,9 @@ class Server:
                     with self.__messagesReceivedLock:
                         if len(self.__messagesReceived) > 512:
                             self.__messagesReceived.pop(0)
-                        self.__messagesReceived.append(str(command))
-                    answer = "Command added to command list"
+                        id = uuid.uuid4()
+                        self.__messagesReceived.append((id, str(command)))
+                    answer = "Command added to command list, with ID:" + str(id)
                 # Antwort für den Clienten ob das Kommando korrekt war.
                 self.__commandConnection.sendall(answer.encode('utf-8'))
             # Sollte die Verbindung getrennt werden wird ein Verbindungsaufbau begonnen.
@@ -114,7 +115,6 @@ class Server:
     def __startSendingData(self):
         while self.__isConnected:
             try:
-                #print("Start Sending")
                 # Setzen eines Timeouts für die dataconnection Verbindung, um zu überprüfen ob die Client in
                 # angemessener Zeit antwortet. Tut dieser das nicht, wird ein Verbindungsneuaufbau begonnen.
                 self.__dataconnection.settimeout(1.0)
@@ -137,13 +137,10 @@ class Server:
             except socket.timeout as e:
                 # If the client didnt answer in time the server assumes the client is dead.
                 # This results in a stop command and the server opens up for a new client to connect
-                #print("startsendingData: timeout")
                 self.__reconnect()
             except BrokenPipeError:
                 self.__reconnect()
-                #print("Connection was already closed, because client didn't respond")
             except ConnectionAbortedError:
-                #print("startsendingData: connectionAbortedError")
                 self.__reconnect()
             except ConnectionResetError:
                 self.__reconnect()
@@ -162,11 +159,7 @@ class Server:
         #print("Exit")
         currentConnectionID = self.__connectionID
         with self.__reconnectLock:
-            #print("reconnect: Lock is claimed")
-            # TODOne hier muss eine block eingeführt werden sodass Funktion die auf das Lock warten bei erzeugter neu
-            #  verbindung nicht einen zweiten reconnect auslösen.
             if self.__isConnected and self.__connectionID == currentConnectionID:
-                #print("reconnect: Create new connection")
                 self.__isConnected = False
                 try:
                     self.__dataconnection.shutdown(socket.SHUT_RDWR)
