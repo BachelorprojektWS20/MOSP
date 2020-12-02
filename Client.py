@@ -6,13 +6,14 @@ import time
 
 class Client:
     
-    # ip - Die ip des Gerätes auf dem die Motorsteuerung bzw. der Server lauft.
+    """ Konstruktor der Client-Klasse.
+
+        Args:
+            ip: Die IP des Servers zu dem der Client eine Verbindung aufbauen wird.
+    """
     def __init__(self, ip):
-        # put the socket into listening mode
         __hostname = socket.gethostname()
         IPAddr = socket.gethostbyname(__hostname)
-        #print("Your Computer Name is: " + hostname)
-        #print("Your Computer IP Address is: " + IPAddr)
         self.__ip = ip
         # Socket für die Kommunikation mit der Motorsteuerungsbefehle.
         self.__commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -30,20 +31,30 @@ class Client:
         self.__maxReconnectAttemps = 10
         self.__run = True
 
-    # Falls der SErver beim ersten versuch eines Reconnects scheitert kann mit diesem Parameter gesteuert werden ob
-    # dieser, bis ins unendliche einen Reconnect versucht.
+    """ Falls der Client beim ersten versuch eines Reconnects scheitert kann mit diesem Parameter gesteuert werden wie 
+        oft dieser einen Reconnect versucht. Standardeinstellung sind 10.
+        
+        Args:   
+            maxReconnectAttemps: Intger welche die Anzahl an Verbindungsveruschen beschreibt, wenn kleiner Null werden 
+                                    keine weiteren Verbindungsversuche unternommen.
+    """
     def setmaxReconnectAttemps(self, maxReconnectAttemps):
         self.__maxReconnectAttemps = maxReconnectAttemps
 
+    """"Gibt zurück ob der Client mit dem Server verbunden ist.
+        
+        Returns: 
+            Boolean if connected or not. 
+    """
     def isIsConnected(self):
         return self.__isConnected
-    # Erzeugt eine Verbindung mit einem Clienten
-    # Sollte der Server nicht antworten so wird der Reconnect solange versucht bis das stopReconnect Flag auf
-    # true gesetzt wird.
 
+    """ Erzeugt eine Verbindung mit einem Server
+        Sollte der Server nicht antworten so wird der Reconnect versucht bis die maximale Anzahl an Verbindungsversuchen
+        ereicht wird(siehe setmaxReconnectAttemps).
+    """
     def __createConnection(self):
         if not self.__isConnected and self.__run:
-            #print("Client: Trying to Connection!")
             try:
                 self.__commandSocket.settimeout(5)
                 self.__commandSocket.connect((self.__ip, 4001))
@@ -52,7 +63,6 @@ class Client:
                 self.__dataSocket.connect((self.__ip, 4002))
                 self.__dataSocket.settimeout(None)
                 self.__isConnected = True
-                # Reseten der Connection ID
                 if self.__connectionID > 512:
                     self.__connectionID = 0
                 self.__connectionID = self.__connectionID + 1
@@ -67,16 +77,19 @@ class Client:
                     self.__reconnectCounter = 0
                     raise RuntimeError("Can't connect to Server, check if Server is running. Attempted " +
                                        str(self.__maxReconnectAttemps) + " reconnects.")
-            #print("Client: Connected")
         else:
             raise RuntimeError('There is already a connection to Client established.')
 
-    #TODO:
+    """ Started den Clienten, d.h Verbindungsaufbau zum angegebenen Server. Danach ist es möglich Befehle zu senden und
+        zu empfangen.
+    """
     def runClient(self):
         serverThread = threading.Thread(target=self.__startCommunication)
         serverThread.start()
 
-    #TODO:
+    """ Beginnt die Kommunikation zwischen dem Clienten und dem Server, d.h. das Empfangen der Nachrichten welche vom
+        Server kommen.
+    """
     def __startCommunication(self):
         self.__createConnection()
         while self.__isConnected:
@@ -87,9 +100,10 @@ class Client:
             except RuntimeError:
                 pass
 
-    # Empfängt eingehende Nachrichten vom Server und bestätigt diesem diese erhalten zu haben.
-    # Sollte die Verbindung unterbrochen werden beginnt diese Funktion einen Verbindungsneuaufruf mit
-    # der reconnect() Funktion.
+    """ Empfängt eingehende Nachrichten vom Server und bestätigt diesem diese erhalten zu haben.
+        Sollte die Verbindung unterbrochen werden beginnt diese Funktion einen Verbindungsneuaufruf mit
+        der reconnect() Funktion.
+    """
     def __dataCommunication(self):
         # Überprüfen ob eine Verbindung besteht
         while self.__isConnected and self.__run:
@@ -117,10 +131,24 @@ class Client:
         if not self.__isConnected and self.__run:
             raise RuntimeError("Client is not connected to a server yet!")
 
-    # Sendet einen Befehl an den Server, welche an die Motorsteuerung weitergegeben werden sollen.
-    # Sollte das Senden in einem Error enden welcher durch die Verbindung zum Server verursacht wird, started diese
-    # Funktion einen Verbindungsneuaufbau mit dem selben Server.
+    """ Sendet einen Befehl an den Server, welche an die Motorsteuerung weitergegeben werden soll. 
+        Kommt es beim Senden zu einem Fehler beginnt der Client mit einem Verbindungsneuaufbau.
+        Args:
+            command: String welcher das Kommando enthält, welches an den Server gesendet wird.
+            
+        Returns:
+            Ein String indem die Antwort des Servers bzw. der Motorsteuerung steht. Ist der Befehl Syntaktisch Korrekt
+            so wird ein Tupel welches aus einer Id und dem Befehl besteht zurückgegeben. Die ID ist hierbei wichtig 
+            falls die Motorsteuerung Fehler sendet, können die Kommandos anhand von der ID idenifiziert werden.
+        
+        Raises: 
+            RunTimeError: Wenn der Client noch nicht zu einem Server verbunden ist.
+            ValueError: Wenn der übergebene Befehl länger als 1024 Zeichen enthält.
+            
+    """
     def sendCommand(self, command):
+        if len(command) > 1024:
+            raise ValueError("Der übergebene Befehl überschreitet die Maximale länge von 1024.")
         if self.__isConnected and self.__run:
             try:
                 print(command)
@@ -145,6 +173,7 @@ class Client:
             except ConnectionAbortedError:
                 #print("startsendingData: connectionAbortedError")
                 self.__reconnect()
+                answer = "Server wasn't rechable"
             except ConnectionResetError:
                 #print("Error")
                 self.__reconnect()
@@ -153,8 +182,9 @@ class Client:
         else:
             self.endConnectionToServer()
 
-    # Endeckt eine der Kommunikationsfunktionen das die Verbindung zum Server getrennt wurde, versucht die Funktion
-    # einen Neuaufbau mit diesem.
+    """ Endeckt eine der Kommunikationsfunktionen das die Verbindung zum Server getrennt wurde, versucht die Funktion
+        einen Neuaufbau mit diesem.
+    """
     def __reconnect(self):
         currentConnectionID = self.__connectionID
         with self.__reconnectLock:
@@ -180,19 +210,24 @@ class Client:
                 pass
                 #print("New connection was already created")
 
-    # Gibt alle empfangenen Nachrichten zurück.
+    """ Gibt alle empfangenen Nachrichten zurück.
+        Returns:
+                Gibt eine Liste aller empfangener Nachrichten zurück.
+    """
     def getReceivedMessages(self):
         try:
             return self.__messagesReceived
         except:
             return None
 
-    # Resetet die empfangenen Nachrichten
+    """ Löscht alle empfangenen Nachrichten aus der Liste.
+    """
     def clearReceivedMessages(self):
         with self.__messagesReceivedLock:
             self.__messagesReceived = []
-    # Git die empfangenen Nachrichten zurück und
-    # resetet diese dann danach.
+    """ Gibt die empfangenen Nachrichten zurück und löscht alle empfangenen Nachrichten aus der Liste.
+        resetet diese dann danach.
+    """
     def getAndResetReceivedMessages(self):
         with self.__messagesReceivedLock:
             copy = self.__messagesReceived
@@ -202,9 +237,10 @@ class Client:
         except:
             return None
 
-    # Deletes the connection between the client and server.
-    # Important this method should NOT be called after immediately after the initialization of the client object,
-    # because the client is still waiting for the answer of the server.
+    """ Beendet die Verbindung zwischen dem Clienten und dem Server.
+        Wichtig: Diese Methode darf nicht direkt nach der Initialisierung des Client Objektes aufgerufen werden, da
+        sonst diese gegeineinander Konflikte auslösen.
+    """
     def endConnectionToServer(self):
         with self.__reconnectLock:
             if self.__isConnected:

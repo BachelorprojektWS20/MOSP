@@ -5,18 +5,19 @@ import re
 import time
 import uuid
 
-# Servermodul für die Motorsteuerung.
+
+""" Servermodul für die Motorsteuerung.
+"""
 class Server:
-    
-    
+
     def __init__(self):
         # put the socket into listening mode
         __hostname = socket.gethostname()
         IPAddr = socket.gethostbyname(__hostname)
-        #print("Your Computer Name is: " + __hostname)
-        #print("Your Computer IP Address is: " + IPAddr)
+        # print("Your Computer Name is: " + __hostname)
+        # print("Your Computer IP Address is: " + IPAddr)
         ip = '169.254.36.181'
-        #ip = ''
+        ip = ''
         # Socket für die Kommunikation mit der Motorsteuerungsbefehle.
         self.__commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.__commandSocket.bind((ip, 4001))
@@ -32,8 +33,9 @@ class Server:
         self.__messagesReceivedLock = threading.Lock()
         self.__messagesReceived = []
 
-    # Erzeugt eine Verbindung mit einem Clienten
-    # Resetet die eingegangenen Befehle und Nachrichten zum Senden(Macht das überhaupt sinn???)
+    """ Erzeugt eine Verbindung mit einem Clienten
+        Resetet die eingegangenen Befehle und Nachrichten zum Senden(Macht das überhaupt sinn???)
+    """
     def __createConnection(self):
         if not self.__isConnected:
             print("Server: Waiting for Connection!")
@@ -47,17 +49,19 @@ class Server:
             self.__messagesReceivedLock = threading.Lock()
             # Reseten der empfangenen Befehle
             self.__messagesReceived = []
-            #self.itemsToSend = []
+            # self.itemsToSend = []
             print("Server: Connected")
         else:
             raise RuntimeError('There is already a connection to Client established.')
 
-    # Started den Kommunikations Thread.
+    """ Started den Kommunikations Thread.
+    """
     def runServer(self):
         serverThread = threading.Thread(target=self.__startCommunication)
         serverThread.start()
 
-    # Started die Threads für die Kommunikation und ist eine endlosschleife, da der Server dauerhaft laufen soll.
+    """ Started die Threads für die Kommunikation und ist eine endlosschleife, da der Server dauerhaft laufen soll.
+    """
     def __startCommunication(self):
         self.__createConnection()
         while True:
@@ -67,18 +71,19 @@ class Server:
                 commandThread.start()
                 sendThread.start()
                 commandThread.join(
-                sendThread.join()
+                    sendThread.join()
                 )
             else:
-                #print('There is no connection to Client established, waiting for a reconnect')
+                # print('There is no connection to Client established, waiting for a reconnect')
                 self.__reconnect()
 
-    # Funktion welche für das Empfangen von Kommandos für die Motorsteuerung zuständig ist.
-    # Bei eingehendem Kommando, wird dieses auf Korrektheit im Syntaktischen überprüft.
-    # Sollte es zu einem Verbindungsausfall kommen so wird eine Neuverbindung mit einem Clienten vorgenommen( siehe
-    # exit() Funktion )
-    # Werden mehr als 512 Befehle übermittelt, wird das erste Element der List entfernt um die Listenlänge nicht über
-    # 512 wachsen zu lassen.
+    """ Funktion welche für das Empfangen von Kommandos für die Motorsteuerung zuständig ist.
+        Bei eingehendem Kommando, wird dieses auf Korrektheit im Syntaktischen überprüft.
+        Sollte es zu einem Verbindungsausfall kommen so wird eine Neuverbindung mit einem Clienten vorgenommen( siehe
+        exit() Funktion )
+        Werden mehr als 512 Befehle übermittelt, wird das erste Element der List entfernt um die Listenlänge nicht über
+        512 wachsen zu lassen.
+    """
     def __commandCommunication(self):
         # Überprüfen ob eine Verbindung besteht
         while self.__isConnected:
@@ -101,17 +106,19 @@ class Server:
                 self.__commandConnection.sendall(answer.encode('utf-8'))
             # Sollte die Verbindung getrennt werden wird ein Verbindungsaufbau begonnen.
             except ConnectionAbortedError:
-                #print("commandComm: ConnectionAbortedError")
+                # print("commandComm: ConnectionAbortedError")
                 self.__reconnect()
             except BrokenPipeError:
-                #print("commandComm: BrokenPipeEroor")
+                # print("commandComm: BrokenPipeEroor")
                 self.__reconnect()
             except ConnectionResetError:
                 self.__reconnect()
 
-    # Sendet die Daten an den verbundenen Clienten. Hier zu zählen zum eine Warnungen oder
-    # Fehlermeldungen welche von der Motorsteuerung gemeldet werden. Desweiteren gehören dazu
-    # auch alle Daten welche den Zustand der Motorsteuerung beschreiben.
+    """ Sendet die Daten an den verbundenen Clienten. Hier zu zählen zum eine Warnungen oder
+        Fehlermeldungen welche von der Motorsteuerung gemeldet werden. Desweiteren gehören dazu
+        auch alle Daten welche den Zustand der Motorsteuerung beschreiben. Die zu Sendenden Nachrichten befinden sich
+        hierfür in er itemsToSend Liste.
+    """
     def __startSendingData(self):
         while self.__isConnected:
             try:
@@ -131,7 +138,6 @@ class Server:
                 else:
                     item = "None"
                     self.__dataconnection.sendall(item.encode('utf-8'))
-                    #print("Wait for Answer")
                     answer = self.__dataconnection.recv(1024)
                 self.__dataconnection.settimeout(None)
             except socket.timeout as e:
@@ -145,18 +151,22 @@ class Server:
             except ConnectionResetError:
                 self.__reconnect()
 
+    """ Fügt eine Nachricht an die Liste der Zusendenden Nachrichten an.
+        Args:   item, die Nachricht als String.
+    """
 
-    def addItemToSend(self,item):
+    def addItemToSend(self, item):
         with self.__itemsToSendLock:
             self.__itemsToSend.append(item)
 
+    """ Beide Threads welche für die Kommunikation zwischen dem Server und Client zu ständig sind wechseln in diesen
+        Zustand bzw. Funktion wenn eine Verbindung zum Clienten nicht mehr verfügbar ist. In dieser Funktion started den
+        Verbindungsvorgang neu und warted auf eine neue Verbindung. Durch das Lock wird verhindert das meherere Funktion
+        gleichzeitig eine Neuverbindung warten.
+    """
 
-    # Beide Threads welche für die Kommunikation zwischen dem Server und Client zu ständig sind wechseln in diesen
-    # Zustand bzw. Funktion wenn eine Verbindung zum Clienten nicht mehr verfügbar ist. In dieser Funktion started den
-    # Verbindungsvorgang neu und warted auf eine neue Verbindung. Durch das Lock wird verhindert das meherere Funktion
-    # gleichzeitig eine Neuverbindung warten.
     def __reconnect(self):
-        #print("Exit")
+        # print("Exit")
         currentConnectionID = self.__connectionID
         with self.__reconnectLock:
             if self.__isConnected and self.__connectionID == currentConnectionID:
@@ -170,7 +180,10 @@ class Server:
             else:
                 pass
 
-    # Überprüft ob die Befehle korrekt syntaktisch sind.
+    """ Überprüft ob die Befehle Syntaktisch korrekt sind.
+        Args: command, der zu überprüfende Befehl als String.
+        Return: Boolean des Ergebnisses.
+    """
     def __checkCommand(self, command):
         # Accepts the following Command; ChangeSpeed(Number,Number,Number)
         if re.match('ChangeSpeed\([0-9]+,[0-9]+,[0-9]+\)', command) is not None:
@@ -187,20 +200,23 @@ class Server:
         # Accepts the following Command: AddPolygonzug[(ID,Strecke,Richtung,Max Geschwindigkeit)(..)..]
         elif re.match('AddPolygonzug\[(\([0-9]+,[0-9]+,[0-9]+,[0-9]+\))+\]', command) is not None:
             return True
-        elif re.match('Mode\((Polygonzug|Direct)\)',command) is not None:
+        elif re.match('Mode\((Polygonzug|Direct)\)', command) is not None:
             return True
         # Accepts the following Command: GetSpeed(True/False)
-        elif re.match('GetSpeed\((True|False)\)',command) is not None:
+        elif re.match('GetSpeed\((True|False)\)', command) is not None:
             return True
         # Accepts the following Command: GetPolygonzug
-        elif re.match('GetPolygonzug\(\)',command) is not None:
+        elif re.match('GetPolygonzug\(\)', command) is not None:
             return True
         # Accepts the following Command: GetInfo(True\False)
-        elif re.match('GetInfo\((True|False)\)',command) is not None:
+        elif re.match('GetInfo\((True|False)\)', command) is not None:
             return True
         else:
             return False
-    #TODO:?
+
+    """ Abrufen der Nachrichten, welche vom Clienten gesendet wurden.
+        Return: Liste der Nachrichten
+    """
     def getAnswer(self):
         with self.__messagesReceivedLock:
             mess = self.__messagesReceived
@@ -209,5 +225,3 @@ class Server:
             return mess
         except:
             return None
-
-
