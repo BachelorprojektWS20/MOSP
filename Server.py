@@ -4,7 +4,8 @@ import threading
 import re
 import time
 import uuid
-
+from Commands import checkCommand
+#TODO: Beobachter für die Motorsteuerung!?
 
 """ Servermodul für die Motorsteuerung.
 """
@@ -91,10 +92,10 @@ class Server:
                 # Empfangen eines Komandos für die Motorsteuerung.
                 command = str(self.__commandConnection.recv(1024).decode("utf-8"))
                 # Überprüfen des Commandos auf Syntaktische Korrektheit
-                if not self.__checkCommand(command):
+                if not checkCommand(command):
                     answer = "Invalid Command: " + command
                 else:
-                    # Entfernen von Elemente aus der Kommando List
+                    # Entfernen von Elemente aus der Kommando List falls diese die Länge von 512 überschreitet.
                     # Anfügen des Komandos an die Komandoliste
                     with self.__messagesReceivedLock:
                         if len(self.__messagesReceived) > 512:
@@ -106,10 +107,8 @@ class Server:
                 self.__commandConnection.sendall(answer.encode('utf-8'))
             # Sollte die Verbindung getrennt werden wird ein Verbindungsaufbau begonnen.
             except ConnectionAbortedError:
-                # print("commandComm: ConnectionAbortedError")
                 self.__reconnect()
             except BrokenPipeError:
-                # print("commandComm: BrokenPipeEroor")
                 self.__reconnect()
             except ConnectionResetError:
                 self.__reconnect()
@@ -154,7 +153,6 @@ class Server:
     """ Fügt eine Nachricht an die Liste der Zusendenden Nachrichten an.
         Args:   item, die Nachricht als String.
     """
-
     def addItemToSend(self, item):
         with self.__itemsToSendLock:
             self.__itemsToSend.append(item)
@@ -164,7 +162,6 @@ class Server:
         Verbindungsvorgang neu und warted auf eine neue Verbindung. Durch das Lock wird verhindert das meherere Funktion
         gleichzeitig eine Neuverbindung warten.
     """
-
     def __reconnect(self):
         # print("Exit")
         currentConnectionID = self.__connectionID
@@ -179,40 +176,6 @@ class Server:
                 self.__createConnection()
             else:
                 pass
-
-    """ Überprüft ob die Befehle Syntaktisch korrekt sind.
-        Args: command, der zu überprüfende Befehl als String.
-        Return: Boolean des Ergebnisses.
-    """
-    def __checkCommand(self, command):
-        # Accepts the following Command; ChangeSpeed(Number,Number,Number)
-        if re.match('ChangeSpeed\([0-9]+,[0-9]+,[0-9]+\)', command) is not None:
-            return True
-        # Accepts the following Command: Polygonzug[(ID,Strecke,Richtung,Max Geschwindigkeit)(..)..]
-        elif re.match('Polygonzug\[(\([0-9]+,[0-9]+,[0-9]+,[0-9]+\))+\]', command) is not None:
-            return True
-        # Accepts the followong Command: StopPolygonzug()
-        elif re.match('StopPolygonzug\(\)', command) is not None:
-            return True
-        # Accepts the following Command: Polygonzug(ID,Strecke,Richtung,Max Geschwindigkeit)
-        elif re.match('ChangePolygonzug\([0-9]+,[0-9]+,[0-9]+,[0-9]+\)', command) is not None:
-            return True
-        # Accepts the following Command: AddPolygonzug[(ID,Strecke,Richtung,Max Geschwindigkeit)(..)..]
-        elif re.match('AddPolygonzug\[(\([0-9]+,[0-9]+,[0-9]+,[0-9]+\))+\]', command) is not None:
-            return True
-        elif re.match('Mode\((Polygonzug|Direct)\)', command) is not None:
-            return True
-        # Accepts the following Command: GetSpeed(True/False)
-        elif re.match('GetSpeed\((True|False)\)', command) is not None:
-            return True
-        # Accepts the following Command: GetPolygonzug
-        elif re.match('GetPolygonzug\(\)', command) is not None:
-            return True
-        # Accepts the following Command: GetInfo(True\False)
-        elif re.match('GetInfo\((True|False)\)', command) is not None:
-            return True
-        else:
-            return False
 
     """ Abrufen der Nachrichten, welche vom Clienten gesendet wurden.
         Return: Liste der Nachrichten

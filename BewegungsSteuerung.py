@@ -1,15 +1,41 @@
 import numpy
+from Modes import Modes
+from Commands import convertChangeSpeed
 
-class BewegungsProfil:
 
-    def __init__(self, maximaleBeschleunigung, maximaleRichtungsänderung, maximaleWinkelbeschleunigung, maximaleGeschwindigkeit, maximaleRotation):
+class BewegungsSteuerung:
+
+    def __init__(self, maximaleBeschleunigung, maximaleRichtungsänderung, maximaleWinkelbeschleunigung,
+                 maximaleGeschwindigkeit, maximaleRotation):
         self.__maximaleBeschleunigung = maximaleBeschleunigung
         self.__maximaleRichtungsänderung = maximaleRichtungsänderung
         self.__maximaleWinkelbeschleunigung = maximaleWinkelbeschleunigung
         self.maxV = maximaleGeschwindigkeit
         self.maxRotation = maximaleRotation
+        self.mode = Modes.DIREKT
 
-    #TODO: Festlegen der
+    ''' Verändert den Steuermodus des Roboers. Aktuell nur die direkte Kontrolle implementiert
+        Args: mode, den Modus in den die Bewegungssteuerung wechseln soll. Variable muss ein Enum des Types Modes sein.
+    '''
+    def changeMode(self, mode):
+        if isinstance(mode, Modes):
+            self.mode = mode
+        else:
+            raise ValueError("Mode muss ein Enum vom Type Mode sein.")
+
+    '''
+    '''
+    def berechneBewegungsAenderungsVerlauf(self, command, aktuellerWert):
+        if self.mode == Modes.DIREKT:
+            zielWert = convertChangeSpeed(command)
+            aenderungsVerlauf = []
+            aenderungsVerlauf.append(self.berechneNeueBewegungswerte(aktuellerWert, zielWert))
+            while aenderungsVerlauf[(len(aenderungsVerlauf) - 1)] != zielWert:
+                aenderungsVerlauf.append(
+                    self.berechneNeueBewegungswerte(aenderungsVerlauf[(len(aenderungsVerlauf) - 1)], zielWert))
+            return aenderungsVerlauf
+
+    # TODO: Festlegen der
     ''' Test
         Args: zielWerte, ist ein Tupel mit drei Werten in folgender Reihenfolge:
                 (zielGeschwindigkeit, zielRichtung, zielRotation)
@@ -27,14 +53,14 @@ class BewegungsProfil:
             raise e
         # Berechnung der neuen Geschwindigkeit
         if abs(zielWert[0] - aktuellerWert[0]) > self.__maximaleBeschleunigung:
-            neueGeschwindigkeit = aktuellerWert[0] + numpy.sign(zielWert[0] - aktuellerWert[0]) * self.__maximaleBeschleunigung
+            neueGeschwindigkeit = aktuellerWert[0] + numpy.sign(
+                zielWert[0] - aktuellerWert[0]) * self.__maximaleBeschleunigung
         else:
             neueGeschwindigkeit = zielWert[0]
-
         neueRichtung = self.__berechneRichtungsAenderung(aktuellerWert, zielWert)
-
         if abs(zielWert[2] - aktuellerWert[2]) > self.__maximaleWinkelbeschleunigung:
-            neueWinkelgeschwindigkeit = aktuellerWert[2] + numpy.sign(zielWert[2] - aktuellerWert[2]) * self.__maximaleWinkelbeschleunigung
+            neueWinkelgeschwindigkeit = aktuellerWert[2] + numpy.sign(
+                zielWert[2] - aktuellerWert[2]) * self.__maximaleWinkelbeschleunigung
         else:
             neueWinkelgeschwindigkeit = zielWert[2]
         return (neueGeschwindigkeit, neueRichtung, neueWinkelgeschwindigkeit)
@@ -54,7 +80,7 @@ class BewegungsProfil:
         else:
             if abs(((zielWert[1] - aktuellerWert[1]) + 180) % 360 - 180) > self.__maximaleRichtungsänderung:
                 if (((zielWert[1] - aktuellerWert[1]) + 180) % 360 - 180) >= 0:
-                     neuerWert = aktuellerWert[1] + self.__maximaleRichtungsänderung
+                    neuerWert = aktuellerWert[1] + self.__maximaleRichtungsänderung
                 else:
                     neuerWert = aktuellerWert[1] - self.__maximaleRichtungsänderung
                 return neuerWert % 360
@@ -67,7 +93,7 @@ class BewegungsProfil:
         Returns: None, wenn kein Fehler gefunden wurde.
         Raises: ValueError, wenn die Werte außerhalb des erlaubten Bereiches liegen.
     '''
-    def __ueberpruefenWerte(self,werte):
+    def __ueberpruefenWerte(self, werte):
         if self.maxV < werte[0]:
             raise ValueError("Die Geschwindigkeit überschreitet das erlaubte Maximum.")
         if werte[0] < 0:

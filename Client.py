@@ -134,7 +134,8 @@ class Client:
     """ Sendet einen Befehl an den Server, welche an die Motorsteuerung weitergegeben werden soll. 
         Kommt es beim Senden zu einem Fehler beginnt der Client mit einem Verbindungsneuaufbau.
         Args:
-            command: String welcher das Kommando enthält, welches an den Server gesendet wird.
+            command: String welcher das Kommando enthält, welches an den Server gesendet wird. Darf nicht über 950 
+                Zeichen besitzten.
             
         Returns:
             Ein String indem die Antwort des Servers bzw. der Motorsteuerung steht. Ist der Befehl Syntaktisch Korrekt
@@ -143,12 +144,12 @@ class Client:
         
         Raises: 
             RunTimeError: Wenn der Client noch nicht zu einem Server verbunden ist.
-            ValueError: Wenn der übergebene Befehl länger als 1024 Zeichen enthält.
+            ValueError: Wenn der übergebene Befehl länger als 950 Zeichen enthält.
             
     """
     def sendCommand(self, command):
-        if len(command) > 1024:
-            raise ValueError("Der übergebene Befehl überschreitet die Maximale länge von 1024.")
+        if len(command) > 950:
+            raise ValueError("Der übergebene Befehl überschreitet die Maximale länge von 950.")
         if self.__isConnected and self.__run:
             try:
                 print(command)

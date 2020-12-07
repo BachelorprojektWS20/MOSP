@@ -10,7 +10,7 @@ serverTH = threading.Thread(target=server.runServer)
 serverTH.start()
 clientTH.start()
 time.sleep(0.1)
-cmd = 1025*"i"
+cmd = 951*"i"
 print( client.sendCommand(cmd) )
 time.sleep(0.1)
 try:
