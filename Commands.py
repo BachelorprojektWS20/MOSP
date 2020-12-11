@@ -1,10 +1,10 @@
 import re
-
+from Modes import Modes
 """ Überprüft ob die Befehle Syntaktisch korrekt sind.
     Args: command, der zu überprüfende Befehl als String.
     Return: Boolean des Ergebnisses.
 """
-def checkCommand(self, command):
+def checkCommand(command):
     # Accepts the following Command; ChangeSpeed(Number,Number,Number)
     if commandIsChangeSpeed(command):
         return True
@@ -50,7 +50,7 @@ def commandIsStop(command):
     Returns: Boolean ob der String dem Befehl enstpricht
 '''
 def commandIsChangeSpeed(command):
-    if re.match('ChangeSpeed\([0-9]+,[0-9]+,-?[0-9]+.[0-9]+\)', command) is not None:
+    if re.match('ChangeSpeed\([0-9]+,[0-9]+,(-?[0-9]+.[0-9]+|0)\)', command) is not None:
         return True
     else:
         return False
@@ -176,6 +176,10 @@ def convertMode(command):
         commandSplit = re.split('\(', command)
         commandValue = commandSplit[1].replace(')','')
         zielWert = commandValue
+        if zielWert == "Direkt":
+            zielWert = Modes.DIREKT
+        elif zielWert == "Polygonzug":
+            zielWert == Modes.POLYGONZUG
         return zielWert
     else:
         raise ValueError("Command is not in the right format.")

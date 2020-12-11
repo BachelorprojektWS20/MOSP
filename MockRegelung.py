@@ -1,10 +1,10 @@
 import threading
 
-from readsensor import Sensor
+#from readsensor import Sensor
 import random
 import re
 
-class MockMotorsteuerung:
+class MockRegelung:
 
     def __init__(self):
 
@@ -24,36 +24,9 @@ class MockMotorsteuerung:
         return self.__readInfo
     def getMovement(self):
         return self.sensor.getMeasurment()
-
-    def addCommands(self, commandWithID):
-        command = commandWithID[1]
-        if re.match('GetInfo\((True)\)',command):
-            self.__readInfo = True
-        if re.match('GetInfo\((False)\)',command):
-            self.__readInfo = False
-        if re.match('GetSpeed\((True)\)',command):
-                self.__readSensor = True
-        if re.match('GetSpeed\((False)\)',command):
-            self.__readSensor = False
-        if re.match('Polygonzug\[(\([0-9]+,[0-9]+,[0-9]+,[0-9]+\))+\]', command):
-            split = re.split('\[',command)
-            split = re.split(',',split[1])
-            for i in range(4):
-                split[i] = split[i].replace('[',"")
-                split[i] = split[i].replace(']',"")
-                split[i] = split[i].replace('(',"")
-                split[i] = split[i].replace(')',"")
-            self.__length = split[1]
-            self.__heading = split[2]
-            self.__speed = split[3]
-        self.__mcommands.append(commandWithID)
-
+    def setMovement(self, movement):
+        self.__length = movement[0]
+        self.__heading = movement[1]
+        self.__speed = movement[2]
     def getInfo(self):
-        return str( self.__length)+";"+ str(self.__heading)+";"+ str(self.__speed )
-
-    def getMessages(self):
-        if len(self.__mcommands) > 0:
-            if random.randint(0,2) == 1:
-                return "Error in Command: " + str( self.__mcommands[len(self.__mcommands)- 1][0] )
-            else:
-                return "Everything works fine."
+        return str(self.__length)+";" + str(self.__heading)+";" + str(self.__speed)

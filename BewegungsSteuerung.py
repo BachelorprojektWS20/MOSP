@@ -1,7 +1,7 @@
 import numpy
 from Modes import Modes
 from Commands import convertChangeSpeed
-
+#TODO: Übersetzten ins Englishe!
 
 class BewegungsSteuerung:
 
@@ -23,7 +23,15 @@ class BewegungsSteuerung:
         else:
             raise ValueError("Mode muss ein Enum vom Type Mode sein.")
 
-    '''
+    ''' Berechnet aus dem übergebenen ChangeSpeed Kommando und den aktuellen Bewegungswerten den Verlauf um von dem 
+        aktuellen Zustand in den Gewünschten zu gelangen.
+        Args:   command, das Kommando welches Ausgewertet und Ausgeführt werden soll.
+                aktuellerWert, der aktuelle Zustand des Roboters d.h. ein Tupel aus (aktueller Geschwindigkeit, Richtung
+                , Winkelgeschwindigkeit)
+        Returns:    Liste aus Tupeln welche den Zustand des Robotersbeschreiben
+        Raises: ValueError, wenn der zielWert oder aktuellerWert nicht im Definitionsbereich liegen oder das Kommando 
+                    nicht im Format ChangeSpeed(...,...,...) vorliegt.
+                RuntimeError, wenn versucht wird den Polygonzug Modus der Bewegungssteuerung aufzurufen.     
     '''
     def berechneBewegungsAenderungsVerlauf(self, command, aktuellerWert):
         if self.mode == Modes.DIREKT:
@@ -34,9 +42,11 @@ class BewegungsSteuerung:
                 aenderungsVerlauf.append(
                     self.berechneNeueBewegungswerte(aenderungsVerlauf[(len(aenderungsVerlauf) - 1)], zielWert))
             return aenderungsVerlauf
+        else:
+            raise RuntimeError("Die Bewegungssteuerung für den Polygonzug ist nocht nicht implementiert!")
 
     # TODO: Festlegen der
-    ''' Test
+    ''' 
         Args: zielWerte, ist ein Tupel mit drei Werten in folgender Reihenfolge:
                 (zielGeschwindigkeit, zielRichtung, zielRotation)
                 Diese beschreiben die gewünschte Bewegung dse Fahrzeugs

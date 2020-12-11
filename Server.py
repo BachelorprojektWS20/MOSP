@@ -18,7 +18,7 @@ class Server:
         # print("Your Computer Name is: " + __hostname)
         # print("Your Computer IP Address is: " + IPAddr)
         ip = '169.254.36.181'
-        ip = ''
+        ip = '127.0.0.1'
         # Socket für die Kommunikation mit der Motorsteuerungsbefehle.
         self.__commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.__commandSocket.bind((ip, 4001))
@@ -155,7 +155,7 @@ class Server:
     """
     def addItemToSend(self, item):
         with self.__itemsToSendLock:
-            self.__itemsToSend.append(item)
+            self.__itemsToSend.append(str(item))
 
     """ Beide Threads welche für die Kommunikation zwischen dem Server und Client zu ständig sind wechseln in diesen
         Zustand bzw. Funktion wenn eine Verbindung zum Clienten nicht mehr verfügbar ist. In dieser Funktion started den
@@ -177,7 +177,8 @@ class Server:
             else:
                 pass
 
-    """ Abrufen der Nachrichten, welche vom Clienten gesendet wurden.
+    """ Abrufen der Nachrichten, welche vom Clienten gesendet wurden und löscht die gesamte List der Empfangenen 
+        Nachrichten. Eine Nachricht besteht dabei aus einem Tupel: (ID, Befehl)
         Return: Liste der Nachrichten
     """
     def getAnswer(self):
