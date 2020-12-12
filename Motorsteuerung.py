@@ -1,4 +1,5 @@
 import time
+import numpy
 import threading
 from MockRegelung import MockRegelung
 from Server import Server
@@ -9,7 +10,7 @@ from SteuerungsdatenThread import SteuerungsdatenThread
 class Motorsteuerung:
 
     def __init__(self):
-        #self.__control = MockRegelung()
+        self.__control = MockRegelung()
         self.__server = Server()
         self.__currentValues = (0,0,0)
         self.movementControl = BewegungsSteuerung(10, 5, 0.1, 500, 0.5)
@@ -23,7 +24,7 @@ class Motorsteuerung:
         self.__commandToControl.start()
         while True:
             #print("Loop")
-            time.sleep(0.1)
+            time.sleep(0.001)
             # self.currentValue = ....
             messagesToSend = []
             messages = self.__server.getAnswer()
@@ -57,11 +58,18 @@ class Motorsteuerung:
                         messagesToSend.append((str(id), str(error)))
 
             if self.__enableGetSpeed:
-                messagesToSend.append(self.__commandToControl.getCurrentStep())
+                step = self.__commandToControl.getCurrentStep()
+                if step[0] > 500:
+                    print("Error:"+ str(step))
+                if step[1] > 360:
+                    print("Error:"+ str(step))
+                if abs(step[2]) > 0.5:
+                    print("Error:"+ str(step))
+                messagesToSend.append(step)
                 #messagesToSend.append(self.__control.getMovement())
             if self.__enableGetInfo:
-                messagesToSend.append("Info")
-                #messagesToSend.append(self.__control.getInfo())
+                #messagesToSend.append("Info")
+                messagesToSend.append("Info"+str(self.__control.getInfo()))
             for messageToSend in messagesToSend:
                 self.__server.addItemToSend(messageToSend)
 

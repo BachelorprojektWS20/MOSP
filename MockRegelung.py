@@ -1,6 +1,6 @@
 import threading
 
-#from readsensor import Sensor
+from readsensor import Sensor
 import random
 import re
 
@@ -8,7 +8,7 @@ class MockRegelung:
 
     def __init__(self):
 
-        self.sensor = Sensor()
+        self.sensor  = Sensor()
         self.__readSensor = False
         self.__readInfo = False
         self.__mcommands = []
@@ -29,4 +29,6 @@ class MockRegelung:
         self.__heading = movement[1]
         self.__speed = movement[2]
     def getInfo(self):
-        return str(self.__length)+";" + str(self.__heading)+";" + str(self.__speed)
+        return str(self.sensor.getMeasurment())
+
+

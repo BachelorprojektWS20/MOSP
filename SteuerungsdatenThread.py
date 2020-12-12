@@ -6,7 +6,7 @@ class SteuerungsdatenThread:
     def __init__(self):
         self.__stepsLock = threading.Lock()
         self.__steps = []
-        self.__timerIntervall = 1
+        self.__timerIntervall = .005
 
     def updateSteps(self, steps):
         if len(steps) < 1:
