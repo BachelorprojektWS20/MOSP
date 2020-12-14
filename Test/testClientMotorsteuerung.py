@@ -2,7 +2,7 @@ import random
 import re
 import threading
 import time
-from Client import Client
+from Kommunikation.Client import Client
 import matplotlib.pyplot as plt
 
 class Test:

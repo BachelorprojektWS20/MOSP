@@ -2,9 +2,8 @@ import random
 import threading
 import uuid
 
-from Server import Server
 import time
-from Client import Client
+from Kommunikation.Client import Client
 
 
 client = Client('169.254.36.181')

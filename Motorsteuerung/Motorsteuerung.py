@@ -1,11 +1,9 @@
 import time
-import numpy
-import threading
-from MockRegelung import MockRegelung
-from Server import Server
-import Commands
-from BewegungsSteuerung import BewegungsSteuerung
-from SteuerungsdatenThread import SteuerungsdatenThread
+from Motorsteuerung.MockRegelung import MockRegelung
+from Kommunikation.Server import Server
+from Motorsteuerung import Commands
+from Motorsteuerung.BewegungsSteuerung import BewegungsSteuerung
+from Motorsteuerung.SteuerungsdatenThread import SteuerungsdatenThread
 
 class Motorsteuerung:
 

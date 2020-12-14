@@ -1,5 +1,5 @@
 import time
-from Server import Server
+from Kommunikation.Server import Server
 #from readsensor import Sensor
 import threading
 #import fcntl

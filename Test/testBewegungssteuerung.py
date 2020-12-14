@@ -1,5 +1,6 @@
-from BewegungsSteuerung import BewegungsSteuerung
-import Commands
+from Motorsteuerung.BewegungsSteuerung import BewegungsSteuerung
+from Motorsteuerung import Commands
+
 test = BewegungsSteuerung(1, 1, 0.1, 100, 0.5)
 try:
     test.berechneNeueBewegungswerte((0, 0, 0), (10, -355, -0.1))

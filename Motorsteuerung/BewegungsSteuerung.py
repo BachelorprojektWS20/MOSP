@@ -1,6 +1,6 @@
 import numpy
-from Modes import Modes
-from Commands import convertChangeSpeed
+from Motorsteuerung.Modes import Modes
+from Motorsteuerung.Commands import convertChangeSpeed
 #TODO: Übersetzten ins Englishe!
 
 class BewegungsSteuerung:

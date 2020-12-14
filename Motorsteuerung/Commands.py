@@ -1,5 +1,5 @@
 import re
-from Modes import Modes
+from Motorsteuerung.Modes import Modes
 """ Überprüft ob die Befehle Syntaktisch korrekt sind.
     Args: command, der zu überprüfende Befehl als String.
     Return: Boolean des Ergebnisses.

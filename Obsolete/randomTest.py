@@ -1,8 +1,5 @@
-import re
-import threading
 import time
-import uuid
-from SteuerungsdatenThread import  SteuerungsdatenThread
+from Motorsteuerung.SteuerungsdatenThread import  SteuerungsdatenThread
 '''
 from  Modes import Modes
 from BewegungsSteuerung import BewegungsSteuerung

@@ -1,10 +1,8 @@
 # first of all import the socket library
 import socket
 import threading
-import re
-import time
 import uuid
-from Commands import checkCommand
+from Motorsteuerung.Commands import checkCommand
 #TODO: Beobachter für die Motorsteuerung!?
 
 """ Servermodul für die Motorsteuerung.

@@ -1,8 +1,7 @@
 import threading
 
-from readsensor import Sensor
-import random
-import re
+from Sensor.readsensor import Sensor
+
 
 class MockRegelung:
 

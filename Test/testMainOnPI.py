@@ -1,6 +1,6 @@
 import time
-from Server import Server
-from readsensor import Sensor
+from Kommunikation.Server import Server
+from Sensor.readsensor import Sensor
 import threading
 
 server = Server()

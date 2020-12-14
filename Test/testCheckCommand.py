@@ -1,4 +1,4 @@
-from Server import Server
+from Kommunikation.Server import Server
 
 server = Server()
 assert server.checkCommand("ChangeSpeed(100,100,100000)") is True

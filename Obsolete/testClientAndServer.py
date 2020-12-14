@@ -1,7 +1,7 @@
 import threading
-from Server import Server
+from Kommunikation.Server import Server
 import time
-from Client import Client
+from Kommunikation.Client import Client
 
 client = Client('127.0.0.1')
 clientTH = threading.Thread(target=client.runClient)
