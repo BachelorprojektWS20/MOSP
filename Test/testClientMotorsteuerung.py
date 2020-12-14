@@ -13,10 +13,15 @@ class Test:
         self.timeSensor = [0]
         self.xSensor = [0]
         self.ySensor = [0]
+        self.speedSend = [0]
+        self.directionSend = [0]
+        self.rotSend = [0]
         self.client = Client('169.254.36.181')
+        #self.client = Client('192.168.178.50')
+        self.client.setmaxReconnectAttemps(50)
 
     def graph(self):
-
+        print("Graph")
         while True:
             messages = self.client.getAndResetReceivedMessages()
             for message in messages:
@@ -53,13 +58,13 @@ class Test:
             plt.plot(self.rot, 'g--')
             plt.title("Rotation")
             plt.subplot(614)
-            plt.plot(self.timeSensor, 'k--')
+            plt.plot(self.speedSend, 'k--')
             plt.title("Time-Sensor")
             plt.subplot(615)
-            plt.plot(self.xSensor, 'r--')
+            plt.plot(self.directionSend, 'r--')
             plt.title("X-Sensor")
             plt.subplot(616)
-            plt.plot(self.ySensor, 'g--')
+            plt.plot(self.rotSend, 'g--')
             plt.title("Y-Sensor")
             plt.show()
 
@@ -70,18 +75,30 @@ class Test:
         clientTH = threading.Thread(target=self.client.runClient)
         clientTH.start()
         time.sleep(0.1)
-        cmdList = [ "ChangeSpeed(100,180,0.45)","ChangeSpeed(100,90,0.45)"]
+        #cmdList = [ "ChangeSpeed(100,180,0.45)","ChangeSpeed(100,90,0.45)"]
+        print("Server answer:")
         print(self.client.sendCommand("GetInfo(True)"))
+        print("Server answer:")
         print(self.client.sendCommand("GetSpeed(True)"))
 
         while True:
-            cmd = "ChangeSpeed(" + str(random.randint(0, 499)) + "," + str(random.randint(0, 359)) + "," + str(random.randint(-49, 49) * 0.01) + ")"
+
+            speed = random.randint(0, 49) * 10
+            direc = random.randint(0, 359)
+            rot = random.randint(-49, 49) * 0.01
+            self.speedSend.append(speed)
+            self.directionSend.append(direc)
+            self.rotSend.append(rot)
+            cmd = "ChangeSpeed(" + str(speed) + "," + str(direc) + "," + str(rot) + ")"
             print("Command:" + cmd)
             #cmd = input()
             serverAnswer = self.client.sendCommand(cmd)
             print("Server answer:")
             print(serverAnswer)
-            time.sleep(random.randint(5, 10)* 1)
+            time.sleep(1)
+            self.speedSend.append(speed)
+            self.directionSend.append(direc)
+            self.rotSend.append(rot)
 
 
 test = Test()
