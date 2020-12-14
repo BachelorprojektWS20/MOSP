@@ -16,6 +16,7 @@ class Server:
         # print("Your Computer Name is: " + __hostname)
         # print("Your Computer IP Address is: " + IPAddr)
         ip = '169.254.36.181'
+        #ip = '192.168.178.50'
         #ip = '127.0.0.1'
         # Socket für die Kommunikation mit der Motorsteuerungsbefehle.
         self.__commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -31,7 +32,9 @@ class Server:
         self.__itemsToSend = []
         self.__messagesReceivedLock = threading.Lock()
         self.__messagesReceived = []
-
+    
+    def isConnected(self):
+        return self.__isConnected
     """ Erzeugt eine Verbindung mit einem Clienten
         Resetet die eingegangenen Befehle und Nachrichten zum Senden(Macht das überhaupt sinn???)
     """

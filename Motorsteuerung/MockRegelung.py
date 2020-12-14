@@ -24,6 +24,7 @@ class MockRegelung:
     def getMovement(self):
         return self.sensor.getMeasurment()
     def setMovement(self, movement):
+        print(movement)
         self.__length = movement[0]
         self.__heading = movement[1]
         self.__speed = movement[2]

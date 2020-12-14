@@ -1,4 +1,6 @@
 import time
+import matplotlib.pyplot as plt
+import threading
 from Motorsteuerung.MockRegelung import MockRegelung
 from Kommunikation.Server import Server
 from Motorsteuerung import Commands
@@ -18,6 +20,8 @@ class Motorsteuerung:
         self.__commandToControl = SteuerungsdatenThread()
 
     def start(self):
+        plotThread = threading.Thread(target=self.graph)
+        plotThread.start()
         self.__server.runServer()
         self.__commandToControl.start()
         while True:
@@ -26,13 +30,13 @@ class Motorsteuerung:
             # self.currentValue = ....
             messagesToSend = []
             messages = self.__server.getAnswer()
+            self.__currentValues = self.__commandToControl.getCurrentStep()
             for message in messages:
                 command = message[1]
                 id = message[0]
                 if Commands.commandIsChangeSpeed(command):
                     try:
                         steps = self.movementControl.berechneBewegungsAenderungsVerlauf(command, self.__commandToControl.getCurrentStep())
-                        self.__currentValues = self.__commandToControl.getCurrentStep()
                         # regelung.... <- stepts
                         self.__commandToControl.updateSteps(steps)
                     except ValueError as error:
@@ -55,7 +59,7 @@ class Motorsteuerung:
                     except ValueError as error:
                         messagesToSend.append((str(id), str(error)))
 
-            if self.__enableGetSpeed:
+            if self.__enableGetSpeed and self.__server.isConnected():
                 step = self.__commandToControl.getCurrentStep()
                 if step[0] > 500:
                     print("Error:"+ str(step))
@@ -65,7 +69,7 @@ class Motorsteuerung:
                     print("Error:"+ str(step))
                 messagesToSend.append(step)
                 #messagesToSend.append(self.__control.getMovement())
-            if self.__enableGetInfo:
+            if self.__enableGetInfo and self.__server.isConnected():
                 #messagesToSend.append("Info")
                 messagesToSend.append("Info"+str(self.__control.getInfo()))
             for messageToSend in messagesToSend:
@@ -73,6 +77,30 @@ class Motorsteuerung:
 
 
 
+    def graph(self):
+        speed = [0]
+        dire = [0]
+        rot = [0]
+        t = 0
+        while True:
+            curr = self.__currentValues
+            speed.append(curr[0])
+            dire.append(curr[1])
+            rot.append(curr[2])
+            t+=1
+            time.sleep(0.01)
+            if t == 5000:
+                plt.figure()
+                plt.subplot(311)
+                plt.plot(speed, 'k--')
+                plt.title("Speed")
+                plt.subplot(312)
+                plt.plot(dire, 'r--')
+                plt.title("Direction")
+                plt.subplot(313)
+                plt.plot(rot, 'g--')
+                plt.show()
+                t=0
 
 
 
