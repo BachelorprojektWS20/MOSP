@@ -81,7 +81,7 @@ class Test:
             serverAnswer = self.client.sendCommand(cmd)
             print("Server answer:")
             print(serverAnswer)
-            time.sleep(random.randint(5, 10)* 0.01)
+            time.sleep(random.randint(5, 10)* 1)
 
 
 test = Test()
