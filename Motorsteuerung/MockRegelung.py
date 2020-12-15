@@ -40,7 +40,6 @@ class MockRegelung:
         self.__rotList.append(movement[2])
         if self.timerCounter:
             self.timerCounter = False
-            print("Graph")
             timer = threading.Timer(60.0, self.graph)
             timer.start()
             
@@ -49,7 +48,7 @@ class MockRegelung:
         return str(self.sensor.getMeasurment())
 
     def graph(self):
-        print("Graph")
+        #print("Graph")
         self.timerCounter = True
         plt.figure()
         plt.subplot(311)

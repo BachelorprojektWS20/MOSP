@@ -7,18 +7,28 @@ class controlThread:
         self.__steps = []
         self.__timerIntervall = 0.1
         self.mock = MockRegelung()
+        self.__stopLock = threading.Lock()
         self.__stop = True
+        self.__lastStep = (0, 0, 0)
+
+    ''' Setzt die Bewegung auf null, d.h. führt eine Notbremsung durch.
+    '''
+    def stop(self):
+        with self.__stopLock:
+            self.__stop = True
+            self.mock.setMovement((0, 0, 0))
 
     ''' Stop der übergabe von Bewegungsbefehlen an die Regelung.
         Übergibt nur noch (0, 0, 0) an die Regelung.
     '''
     def setStop(self, stop):
-        self.__stop = stop
+        with self.__stopLock:
+            self.__stop = stop
 
     def isStop(self):
         return self.__stop
 
-    ''' Aktualisiert die zu 
+    ''' Aktualisiert die zu
     '''
     def updateSteps(self, steps):
         if len(steps) < 1:
@@ -30,9 +40,7 @@ class controlThread:
                 self.__steps = steps
 
     def getCurrentStep(self):
-        if len(self.__steps) > 0:
-            return self.__steps[0]
-        return (0, 0, 0)
+        return self.__lastStep
 
     def start(self):
         thread = threading.Thread(target=self.__valueLoop)
@@ -59,4 +67,4 @@ class controlThread:
             #print(step)
             #Regelung
             self.mock.setMovement(step)
-
+            self.__lastStep = step

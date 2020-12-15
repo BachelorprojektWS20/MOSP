@@ -2,7 +2,8 @@
 import socket
 import threading
 import uuid
-from Motorsteuerung.Commands import checkCommand
+from Motorsteuerung import MotorControl
+from Motorsteuerung.Commands import checkCommand, commandIsStop, convertStop
 #TODO: Beobachter für die Motorsteuerung!?
 
 """ Servermodul für die Motorsteuerung.
@@ -32,7 +33,33 @@ class Server:
         self.__itemsToSend = []
         self.__messagesReceivedLock = threading.Lock()
         self.__messagesReceived = []
-    
+        self.__motorControl
+
+    def __init__(self, motorControl):
+        # put the socket into listening mode
+        __hostname = socket.gethostname()
+        IPAddr = socket.gethostbyname(__hostname)
+        # print("Your Computer Name is: " + __hostname)
+        # print("Your Computer IP Address is: " + IPAddr)
+        ip = '169.254.36.181'
+        #ip = '192.168.178.50'
+        #ip = '127.0.0.1'
+        # Socket für die Kommunikation mit der Motorsteuerungsbefehle.
+        self.__commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.__commandSocket.bind((ip, 4001))
+        # Socket für die Kommunikation von Messdaten
+        self.__dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.__dataSocket.bind((ip, 4002))
+        self.__conn = ''
+        self.__answer = '0'
+        self.__reconnectLock = threading.Lock()
+        self.__isConnected = False
+        self.__itemsToSendLock = threading.Lock()
+        self.__itemsToSend = []
+        self.__messagesReceivedLock = threading.Lock()
+        self.__messagesReceived = []
+        self.__motorControl = motorControl
+
     def isConnected(self):
         return self.__isConnected
     """ Erzeugt eine Verbindung mit einem Clienten
@@ -103,6 +130,14 @@ class Server:
                             self.__messagesReceived.pop(0)
                         id = uuid.uuid4()
                         self.__messagesReceived.append((id, str(command)))
+                        if commandIsStop(str(command)):
+                            if convertStop(str(command)):
+                                if self.__motorControl is not None:
+                                    try:
+                                        self.__motorControl.stop()
+                                    except:
+                                        # Falls nicht vom Type motorControl
+                                        pass
                     answer = str(id)
                 # Antwort für den Clienten ob das Kommando korrekt war.
                 self.__commandConnection.sendall(answer.encode('utf-8'))
@@ -128,6 +163,8 @@ class Server:
                 if len(self.__itemsToSend) > 0:
                     item = self.__itemsToSend[0]
                     # Sende Daten.
+                    #print("Data")
+                    #print(item.encode('utf-8'))
                     self.__dataconnection.sendall(item.encode('utf-8'))
                     # Warte auf Bestaetigung.
                     answer = self.__dataconnection.recv(1024)
@@ -165,6 +202,8 @@ class Server:
     """
     def __reconnect(self):
         # print("Exit")
+        if isinstance(self.__motorControl, MotorControl.MotorControl):
+            self.__motorControl.stop()
         currentConnectionID = self.__connectionID
         with self.__reconnectLock:
             if self.__isConnected and self.__connectionID == currentConnectionID:
@@ -178,7 +217,7 @@ class Server:
             else:
                 pass
 
-    """ Abrufen der Nachrichten, welche vom Clienten gesendet wurden und löscht die gesamte List der Empfangenen 
+    """ Abrufen der Nachrichten, welche vom Clienten gesendet wurden und löscht die gesamte List der Empfangenen
         Nachrichten. Eine Nachricht besteht dabei aus einem Tupel: (ID, Befehl)
         Return: Liste der Nachrichten
     """

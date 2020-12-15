@@ -11,13 +11,14 @@ class MotorControl:
 
     def __init__(self):
         self.__control = MockRegelung()
-        self.__server = Server()
+        self.__server = Server(self)
         self.__currentValues = (0,0,0)
         self.movementControl = MotionControl(10, 5, 0.1, 500, 0.5)
         self.__enableGetSpeed = False
         self.__enableGetInfo = False
         self.__time = 0.05
         self.__commandToControl = controlThread()
+        self.__messages = []
 
     def start(self):
         #plotThread = threading.Thread(target=self.graph)
@@ -27,9 +28,9 @@ class MotorControl:
         while True:
             time.sleep(0.001)
             messagesToSend = []
-            messages = self.__server.getAnswer()
+            self.__messages = self.__server.getAnswer()
             self.__currentValues = self.__commandToControl.getCurrentStep()
-            for message in messages:
+            for message in self.__messages:
                 command = message[1]
                 id = message[0]
                 if Commands.commandIsChangeSpeed(command):
@@ -73,7 +74,9 @@ class MotorControl:
             for messageToSend in messagesToSend:
                 self.__server.addItemToSend(messageToSend)
 
-
+    def stop(self):
+        self.__messages = []
+        self.__commandToControl.stop()
 
     def graph(self):
         speed = [0]
@@ -99,7 +102,6 @@ class MotorControl:
                 plt.plot(rot, 'g--')
                 plt.show()
                 t=0
-
 
 
 
