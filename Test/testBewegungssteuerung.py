@@ -1,13 +1,13 @@
-from Motorsteuerung.BewegungsSteuerung import BewegungsSteuerung
+from Motorsteuerung.MotionControl import MotionControl
 from Motorsteuerung import Commands
 
-test = BewegungsSteuerung(1, 1, 0.1, 100, 0.5)
+test = MotionControl(1, 1, 0.1, 100, 0.5)
 try:
-    test.berechneNeueBewegungswerte((0, 0, 0), (10, -355, -0.1))
+    test.calculateNewMovementValues((0, 0, 0), (10, -355, -0.1))
 except ValueError as e:
     print(e)
 try:
-    test.berechneNeueBewegungswerte((0, 0, 0), (10, 355, 100))
+    test.calculateNewMovementValues((0, 0, 0), (10, 355, 100))
 except ValueError as e:
     print(e)
 
@@ -18,9 +18,9 @@ print(Commands.convertGetSpeed("GetSpeed(True)"))
 print(Commands.convertGetSpeed("GetSpeed(False)"))
 
 aktuellerWert = (1,0,0)
-verlauf = test.berechneBewegungsAenderungsVerlauf("ChangeSpeed(100,180,-0.5)", aktuellerWert)
+verlauf = test.calculateMovementChange("ChangeSpeed(100,180,-0.5)", aktuellerWert)
 print(verlauf)
-verlauf = test.berechneBewegungsAenderungsVerlauf("ChangeSpeed(0,0,0.0)", verlauf[len(verlauf)-1])
+verlauf = test.calculateMovementChange("ChangeSpeed(0,0,0.0)", verlauf[len(verlauf) - 1])
 print(verlauf)
 
 

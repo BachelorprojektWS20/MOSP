@@ -1,6 +1,6 @@
-from Motorsteuerung import Motorsteuerung
+from Motorsteuerung import MotorControl
 
 
 if __name__ == "__main__":
-    motorSteu = Motorsteuerung.Motorsteuerung()
+    motorSteu = MotorControl.MotorControl()
     motorSteu.start()

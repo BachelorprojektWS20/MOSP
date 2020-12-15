@@ -1,5 +1,5 @@
 import time
-from Motorsteuerung.SteuerungsdatenThread import  SteuerungsdatenThread
+from Motorsteuerung.controlThread import  SteuerungsdatenThread
 '''
 from  Modes import Modes
 from BewegungsSteuerung import BewegungsSteuerung

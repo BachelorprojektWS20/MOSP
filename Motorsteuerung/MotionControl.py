@@ -3,16 +3,16 @@ from Motorsteuerung.Modes import Modes
 from Motorsteuerung.Commands import convertChangeSpeed
 #TODO: Übersetzten ins Englishe!
 
-class BewegungsSteuerung:
+class MotionControl:
 
-    def __init__(self, maximaleBeschleunigung, maximaleRichtungsänderung, maximaleWinkelbeschleunigung,
-                 maximaleGeschwindigkeit, maximaleRotation):
-        self.__maximaleBeschleunigung = maximaleBeschleunigung
-        self.__maximaleRichtungsänderung = maximaleRichtungsänderung
-        self.__maximaleWinkelbeschleunigung = maximaleWinkelbeschleunigung
-        self.maxV = maximaleGeschwindigkeit
-        self.maxRotation = maximaleRotation
-        self.mode = Modes.DIREKT
+    def __init__(self, maximumAcceleration, maximumDirectionChange, maximumAngularAcceleration,
+                 maximumSpeed, maximumRotation):
+        self.__maximumAcceleration = maximumAcceleration
+        self.__maximumDirectionChange = maximumDirectionChange
+        self.__maximumAngularAcceleration = maximumAngularAcceleration
+        self.maximumSpeed = maximumSpeed
+        self.maximumRotation = maximumRotation
+        self.mode = Modes.DIRECT
 
     ''' Verändert den Steuermodus des Roboers. Aktuell nur die direkte Kontrolle implementiert
         Args: mode, den Modus in den die Bewegungssteuerung wechseln soll. Variable muss ein Enum des Types Modes sein.
@@ -33,19 +33,19 @@ class BewegungsSteuerung:
                     nicht im Format ChangeSpeed(...,...,...) vorliegt.
                 RuntimeError, wenn versucht wird den Polygonzug Modus der Bewegungssteuerung aufzurufen.     
     '''
-    def berechneBewegungsAenderungsVerlauf(self, command, aktuellerWert):
-        if self.mode == Modes.DIREKT:
-            zielWert = convertChangeSpeed(command)
-            aenderungsVerlauf = []
-            aenderungsVerlauf.append(self.berechneNeueBewegungswerte(aktuellerWert, zielWert))
-            while aenderungsVerlauf[(len(aenderungsVerlauf) - 1)] != zielWert:
-                aenderungsVerlauf.append(
-                    self.berechneNeueBewegungswerte(aenderungsVerlauf[(len(aenderungsVerlauf) - 1)], zielWert))
-            return aenderungsVerlauf
+    def calculateMovementChange(self, command, currentValue):
+        if self.mode == Modes.DIRECT:
+            targetValue = convertChangeSpeed(command)
+            courseOfChange = []
+            courseOfChange.append(self.calculateNewMovementValues(currentValue, targetValue))
+            while courseOfChange[(len(courseOfChange) - 1)] != targetValue:
+                courseOfChange.append(
+                    self.calculateNewMovementValues(courseOfChange[(len(courseOfChange) - 1)], targetValue))
+            return courseOfChange
         else:
             raise RuntimeError("Die Bewegungssteuerung für den Polygonzug ist nocht nicht implementiert!")
 
-    # TODO: Festlegen der
+    # TODO: Festlegen der Parameter
     ''' 
         Args: zielWerte, ist ein Tupel mit drei Werten in folgender Reihenfolge:
                 (zielGeschwindigkeit, zielRichtung, zielRotation)
@@ -55,28 +55,28 @@ class BewegungsSteuerung:
                 Diese beschreiben die aktuelle Bewegung des Fahrzeugs.
         Raises: ValueError, wenn der zielWert oder aktuellerWert nicht im Definitionsbereich liegen.
     '''
-    def berechneNeueBewegungswerte(self, aktuellerWert, zielWert):
+    def calculateNewMovementValues(self, currentValue, targetValue):
         try:
-            self.__ueberpruefenWerte(zielWert)
-            self.__ueberpruefenWerte(aktuellerWert)
+            self.__checkValues(targetValue)
+            self.__checkValues(currentValue)
         except ValueError as e:
             raise e
         # Berechnung der neuen Geschwindigkeit
-        if abs(zielWert[0] - aktuellerWert[0]) > self.__maximaleBeschleunigung:
-            neueGeschwindigkeit = aktuellerWert[0] + numpy.sign(
-                zielWert[0] - aktuellerWert[0]) * self.__maximaleBeschleunigung
+        if abs(targetValue[0] - currentValue[0]) > self.__maximumAcceleration:
+            newSpeed = currentValue[0] + numpy.sign(
+                targetValue[0] - currentValue[0]) * self.__maximumAcceleration
         else:
-            neueGeschwindigkeit = zielWert[0]
-        neueRichtung = self.__berechneRichtungsAenderung(aktuellerWert, zielWert)
-        if abs(zielWert[2] - aktuellerWert[2]) > self.__maximaleWinkelbeschleunigung:
-            neueWinkelgeschwindigkeit = aktuellerWert[2] + numpy.sign(
-                zielWert[2] - aktuellerWert[2]) * self.__maximaleWinkelbeschleunigung
+            newSpeed = targetValue[0]
+        newDirection = self.__calculateChangeOfDirection(currentValue, targetValue)
+        if abs(targetValue[2] - currentValue[2]) > self.__maximumAngularAcceleration:
+            newAngularVelocity = currentValue[2] + numpy.sign(
+                targetValue[2] - currentValue[2]) * self.__maximumAngularAcceleration
         else:
-            neueWinkelgeschwindigkeit = zielWert[2]
-        return (neueGeschwindigkeit, neueRichtung, neueWinkelgeschwindigkeit)
+            newAngularVelocity = targetValue[2]
+        return (newSpeed, newDirection, newAngularVelocity)
 
-    ''' Berechnung der neune Richtung des Geschwindigkeitsvektores.
-        Args: zielWerte, ist ein Tupel mit drei Werten in folgender Reihenfolge:
+    ''' Berechnung der neunen Richtung des Geschwindigkeitsvektores.
+        Args: targetValue, ist ein Tupel mit drei Werten in folgender Reihenfolge:
                 (zielGeschwindigkeit, zielRichtung, zielRotation)
                 Diese beschreiben die gewünschte Bewegung dse Fahrzeugs
                 aktuelleWerte, ist ist ein Tupel mit drei Werten in folgender Reihenfolge:
@@ -84,18 +84,18 @@ class BewegungsSteuerung:
                 Diese beschreiben die aktuelle Bewegung des Fahrzeugs.
         Returns: Ein Tupel 
     '''
-    def __berechneRichtungsAenderung(self, aktuellerWert, zielWert):
-        if aktuellerWert[0] == 0:
-            return zielWert[1]
+    def __calculateChangeOfDirection(self, currentValue, targetValue):
+        if currentValue[0] == 0:
+            return targetValue[1]
         else:
-            if abs(((zielWert[1] - aktuellerWert[1]) + 180) % 360 - 180) > self.__maximaleRichtungsänderung:
-                if (((zielWert[1] - aktuellerWert[1]) + 180) % 360 - 180) >= 0:
-                    neuerWert = aktuellerWert[1] + self.__maximaleRichtungsänderung
+            if abs(((targetValue[1] - currentValue[1]) + 180) % 360 - 180) > self.__maximumDirectionChange:
+                if (((targetValue[1] - currentValue[1]) + 180) % 360 - 180) >= 0:
+                    newValue = currentValue[1] + self.__maximumDirectionChange
                 else:
-                    neuerWert = aktuellerWert[1] - self.__maximaleRichtungsänderung
-                return neuerWert % 360
+                    newValue = currentValue[1] - self.__maximumDirectionChange
+                return newValue % 360
             else:
-                return zielWert[1]
+                return targetValue[1]
 
     ''' Überprüft das übergebene Tupel ob die Werte im erlaubten Bereich liegen.
         Args: werte, ist ein Tupel aus drei Werten in folgender Reihenfolge:
@@ -103,12 +103,12 @@ class BewegungsSteuerung:
         Returns: None, wenn kein Fehler gefunden wurde.
         Raises: ValueError, wenn die Werte außerhalb des erlaubten Bereiches liegen.
     '''
-    def __ueberpruefenWerte(self, werte):
-        if self.maxV < werte[0]:
+    def __checkValues(self, values):
+        if self.maximumSpeed < values[0]:
             raise ValueError("Die Geschwindigkeit überschreitet das erlaubte Maximum.")
-        if werte[0] < 0:
+        if values[0] < 0:
             raise ValueError("Die Geschwindigkeit darf nicht negativ sein.")
-        if 360 < werte[1] or werte[1] < 0:
+        if 360 < values[1] or values[1] < 0:
             raise ValueError("Die Richtung muss im bereich ziwschen 0 und 360 Grad liegen.")
-        if abs(werte[2]) > self.maxRotation:
+        if abs(values[2]) > self.maximumRotation:
             raise ValueError("Die Rotationsgeschwindigkeit überschreitet das erlaubte Maximum.")

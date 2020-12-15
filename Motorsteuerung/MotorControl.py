@@ -4,30 +4,28 @@ import threading
 from Motorsteuerung.MockRegelung import MockRegelung
 from Kommunikation.Server import Server
 from Motorsteuerung import Commands
-from Motorsteuerung.BewegungsSteuerung import BewegungsSteuerung
-from Motorsteuerung.SteuerungsdatenThread import SteuerungsdatenThread
+from Motorsteuerung.MotionControl import MotionControl
+from Motorsteuerung.controlThread import SteuerungsdatenThread
 
-class Motorsteuerung:
+class MotorControl:
 
     def __init__(self):
         self.__control = MockRegelung()
         self.__server = Server()
         self.__currentValues = (0,0,0)
-        self.movementControl = BewegungsSteuerung(10, 5, 0.1, 500, 0.5)
+        self.movementControl = MotionControl(10, 5, 0.1, 500, 0.5)
         self.__enableGetSpeed = False
         self.__enableGetInfo = False
         self.__time = 0.05
         self.__commandToControl = SteuerungsdatenThread()
 
     def start(self):
-        plotThread = threading.Thread(target=self.graph)
-        plotThread.start()
+        #plotThread = threading.Thread(target=self.graph)
+        #plotThread.start()
         self.__server.runServer()
         self.__commandToControl.start()
         while True:
-            #print("Loop")
             time.sleep(0.001)
-            # self.currentValue = ....
             messagesToSend = []
             messages = self.__server.getAnswer()
             self.__currentValues = self.__commandToControl.getCurrentStep()
@@ -36,8 +34,8 @@ class Motorsteuerung:
                 id = message[0]
                 if Commands.commandIsChangeSpeed(command):
                     try:
-                        steps = self.movementControl.berechneBewegungsAenderungsVerlauf(command, self.__commandToControl.getCurrentStep())
-                        # regelung.... <- stepts
+                        steps = self.movementControl.calculateMovementChange(command, self.__commandToControl.getCurrentStep())
+                        #TODO:
                         self.__commandToControl.updateSteps(steps)
                     except ValueError as error:
                         messagesToSend.append((str(id), str(error)))
@@ -68,9 +66,7 @@ class Motorsteuerung:
                 if abs(step[2]) > 0.5:
                     print("Error:"+ str(step))
                 messagesToSend.append(step)
-                #messagesToSend.append(self.__control.getMovement())
             if self.__enableGetInfo and self.__server.isConnected():
-                #messagesToSend.append("Info")
                 messagesToSend.append("Info"+str(self.__control.getInfo()))
             for messageToSend in messagesToSend:
                 self.__server.addItemToSend(messageToSend)

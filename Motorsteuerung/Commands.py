@@ -177,9 +177,9 @@ def convertMode(command):
         commandValue = commandSplit[1].replace(')','')
         zielWert = commandValue
         if zielWert == "Direkt":
-            zielWert = Modes.DIREKT
+            zielWert = Modes.DIRECT
         elif zielWert == "Polygonzug":
-            zielWert == Modes.POLYGONZUG
+            zielWert == Modes.POLYGONCOURSE
         return zielWert
     else:
         raise ValueError("Command is not in the right format.")

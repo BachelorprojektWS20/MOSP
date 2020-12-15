@@ -1,4 +1,4 @@
-from Motorsteuerung import Motorsteuerung
+from Motorsteuerung import MotorControl
 
-motorSteu = Motorsteuerung()
+motorSteu = MotorControl()
 motorSteu.start()

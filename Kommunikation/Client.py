@@ -166,17 +166,13 @@ class Client:
                 return answer.decode('utf-8')
             # Mögliche Fehler welche zu einer Neuverbindung zwischen Client und Server führen.
             except socket.timeout as e:
-                # If the server didn't answer in time, the client tries to reconnect to the server.
                 self.__reconnect()
             except BrokenPipeError:
                 self.__reconnect()
-                #print("Connection was already closed, because client didn't respond")
             except ConnectionAbortedError:
-                #print("startsendingData: connectionAbortedError")
                 self.__reconnect()
                 answer = "Server wasn't rechable"
             except ConnectionResetError:
-                #print("Error")
                 self.__reconnect()
         elif not self.__isConnected and self.__run:
             raise RuntimeError("Clienten is not connected to a server yet!")
@@ -192,7 +188,6 @@ class Client:
             # TODONE hier muss eine block eingeführt werden sodass Funktion die auf das Lock warten bei erzeugter neu
             #  verbindung nicht einen zweiten reconnect auslösen
             if self.__isConnected and self.__connectionID == currentConnectionID and self.__run:
-                #print("reconnect: Create new connection")
                 self.__isConnected = False
                 try:
                     self.__commandSocket.shutdown(socket.SHUT_RDWR)
@@ -203,13 +198,11 @@ class Client:
                     print("OSError")
                     pass
                 self.__createConnection()
-                #print("Reconected")
             elif (not self.__isConnected) and self.__connectionID == currentConnectionID and self.__run:
                 self.__isConnected = False
                 self.__createConnection()
             else:
                 pass
-                #print("New connection was already created")
 
     """ Gibt alle empfangenen Nachrichten zurück.
         Returns:
@@ -226,6 +219,7 @@ class Client:
     def clearReceivedMessages(self):
         with self.__messagesReceivedLock:
             self.__messagesReceived = []
+
     """ Gibt die empfangenen Nachrichten zurück und löscht alle empfangenen Nachrichten aus der Liste.
         resetet diese dann danach.
     """
