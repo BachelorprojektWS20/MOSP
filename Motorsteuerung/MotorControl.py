@@ -5,7 +5,7 @@ from Motorsteuerung.MockRegelung import MockRegelung
 from Kommunikation.Server import Server
 from Motorsteuerung import Commands
 from Motorsteuerung.MotionControl import MotionControl
-from Motorsteuerung.controlThread import SteuerungsdatenThread
+from Motorsteuerung.controlThread import controlThread
 
 class MotorControl:
 
@@ -17,7 +17,7 @@ class MotorControl:
         self.__enableGetSpeed = False
         self.__enableGetInfo = False
         self.__time = 0.05
-        self.__commandToControl = SteuerungsdatenThread()
+        self.__commandToControl = controlThread()
 
     def start(self):
         #plotThread = threading.Thread(target=self.graph)
@@ -56,6 +56,8 @@ class MotorControl:
                         self.__enableGetInfo = Commands.convertGetInfo(command)
                     except ValueError as error:
                         messagesToSend.append((str(id), str(error)))
+                if Commands.commandIsStop(command):
+                    self.__commandToControl.setStop(Commands.convertStop(command))
 
             if self.__enableGetSpeed and self.__server.isConnected():
                 step = self.__commandToControl.getCurrentStep()

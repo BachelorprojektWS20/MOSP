@@ -95,7 +95,7 @@ class Test:
             serverAnswer = self.client.sendCommand(cmd)
             print("Server answer:")
             print(serverAnswer)
-            time.sleep(1)
+            time.sleep(10)
             self.speedSend.append(speed)
             self.directionSend.append(direc)
             self.rotSend.append(rot)

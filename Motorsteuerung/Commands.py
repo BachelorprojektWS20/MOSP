@@ -40,7 +40,7 @@ def checkCommand(command):
     Args: command, der zu überprüfendende Befehl
 '''
 def commandIsStop(command):
-    if re.match('STOP', command) is not None:
+    if re.match('STOP\((True|False)\)', command) is not None:
         return True
     else:
         return False
@@ -187,7 +187,7 @@ def convertMode(command):
 ''' Konvertiert den übergebenen Befehl GetSpeed und extrahiert den Parameter des Befehls.
     Args: command, GetSpeed Kommando welches als String vorliegt
     Returns: Den Parameter des Befehls GetSpeed als Boolean.
-    Raises: ValueError, wenn der Kommand nicht dem ChangeSpeed-Kommandoformat entspricht
+    Raises: ValueError, wenn der Kommand nicht dem GetSpeed-Kommandoformat entspricht
 '''
 def convertGetSpeed(command):
     if commandIsGetSpeed(command):
@@ -195,5 +195,18 @@ def convertGetSpeed(command):
         commandValue = commandSplit[1].replace(')','')
         zielWert = eval(commandValue)
         return zielWert
+    else:
+        raise ValueError("Command is not in the right format.")
+''' Konvertiert den übergebenen Befehl STOP und extrahiert den Parameter des Befehls.
+    Args: command, STOP Kommando welches als String vorliegt
+    Returns: Den Parameter des Befehls STOP als Boolean.
+    Raises: ValueError, wenn der Kommand nicht dem STOP-Kommandoformat entspricht
+'''
+def convertStop(command):
+    if commandIsStop(command):
+        commandSplit = re.split('\(', command)
+        stopParameter = commandSplit[1].replace(')','')
+        value = eval(stopParameter)
+        return value
     else:
         raise ValueError("Command is not in the right format.")

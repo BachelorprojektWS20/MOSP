@@ -1,5 +1,5 @@
 import time
-from Motorsteuerung.controlThread import  SteuerungsdatenThread
+from Motorsteuerung.controlThread import  controlThread
 '''
 from  Modes import Modes
 from BewegungsSteuerung import BewegungsSteuerung
@@ -20,7 +20,7 @@ steps = []
 steps.append((0, 0, 0))
 steps.append((1, 0, 0))
 print([steps])
-thread = SteuerungsdatenThread()
+thread = controlThread()
 thread.start()
 thread.updateSteps(steps)
 time.sleep(5)
