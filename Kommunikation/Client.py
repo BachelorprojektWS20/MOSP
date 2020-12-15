@@ -152,7 +152,7 @@ class Client:
             raise ValueError("Der übergebene Befehl überschreitet die Maximale länge von 950.")
         if self.__isConnected and self.__run:
             try:
-                print(command)
+                #print(command)
                 # Setzen eines Timeouts für die Verbindung, um zu überprüfen ob der Server in angemessener
                 # Zeit antwortet. Tut dieser das nicht, wird ein Verbindungsneuaufbau begonnen.
                 self.__commandSocket.settimeout(1.0)
