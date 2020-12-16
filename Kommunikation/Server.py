@@ -16,8 +16,8 @@ class Server:
         IPAddr = socket.gethostbyname(__hostname)
         # print("Your Computer Name is: " + __hostname)
         # print("Your Computer IP Address is: " + IPAddr)
-        ip = '169.254.36.181'
-        #ip = '192.168.178.50'
+        ip = '169.254.36.10'
+        #ip = '192.168.178.5'
         #ip = '127.0.0.1'
         # Socket für die Kommunikation mit der Motorsteuerungsbefehle.
         self.__commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

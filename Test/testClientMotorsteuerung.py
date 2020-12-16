@@ -17,7 +17,7 @@ class Test:
         self.speedSend = [0]
         self.directionSend = [0]
         self.rotSend = [0]
-        self.client = Client('169.254.36.181')
+        self.client = Client('169.254.36.10')
         #self.client = Client('192.168.178.50')
         self.client.setmaxReconnectAttemps(50)
 
