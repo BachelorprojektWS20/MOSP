@@ -1,8 +1,11 @@
 import threading
 from Motorsteuerung.MockRegelung import MockRegelung
+from Umrechnung.UmrechnungInU import Umrechnung
+from Umrechnung.PWM_Erzeugung import PWM
+
 class controlThread:
 
-    def __init__(self):
+    def __init__(self, VL, VR, HL, HR, modus):
         self.__stepsLock = threading.Lock()
         self.__steps = []
         self.__timerIntervall = 0.1
@@ -10,6 +13,8 @@ class controlThread:
         self.__stopLock = threading.Lock()
         self.__stop = True
         self.__lastStep = (0, 0, 0)
+        self.__umrechner = Umrechnung(10)
+        self.__pwm = PWM(VL, VR, HL, HR, modus)
 
     ''' Setzt die Bewegung auf null, d.h. führt eine Notbremsung durch.
     '''
@@ -40,7 +45,8 @@ class controlThread:
                 self.__steps = steps
 
     def getCurrentStep(self):
-        return self.__lastStep
+        return self.__pwm.getU()
+        #return self.__lastStep
 
     def start(self):
         thread = threading.Thread(target=self.__valueLoop)
@@ -66,5 +72,7 @@ class controlThread:
                 step = (0, 0, 0)
             #print(step)
             #Regelung
-            self.mock.setMovement(step)
-            self.__lastStep = step
+            pwmSignals = self.__umrechner.setEingabe(step[0], step[1], step[2])
+            self.__pwm.setU(pwmSignals)
+            #self.mock.setMovement(step)
+            #self.__lastStep = step

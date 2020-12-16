@@ -9,7 +9,7 @@ from Motorsteuerung.controlThread import controlThread
 
 class MotorControl:
 
-    def __init__(self):
+    def __init__(self, VL, VR, HL, HR, modus):
         self.__control = MockRegelung()
         self.__server = Server(self)
         self.__currentValues = (0,0,0)
@@ -17,7 +17,7 @@ class MotorControl:
         self.__enableGetSpeed = False
         self.__enableGetInfo = False
         self.__time = 0.05
-        self.__commandToControl = controlThread()
+        self.__commandToControl = controlThread( VL, VR, HL, HR, modus)
         self.__messages = []
 
     def start(self):

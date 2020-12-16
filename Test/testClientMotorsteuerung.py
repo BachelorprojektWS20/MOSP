@@ -25,7 +25,7 @@ class Test:
         #print("Graph")
         while True:
             messages = self.client.getAndResetReceivedMessages()
-            print(messages)
+            #print(messages)
             for message in messages:
                 if re.match('\((-?[0-9]+.[0-9]+|[0-9]+),\s(-?[0-9]+.[0-9]+|[0-9]+),\s(-?[0-9]+.[0-9]+|[0-9]+)\)', message) is not None:
                     commandSplit = re.split('\(', message)
@@ -105,7 +105,8 @@ class Test:
             self.rotSend.append(rot)
             self.__T += 1
             if self.__T == 3:
-                self.client.sendCommand("STOP(True)")
+                pass
+                #self.client.sendCommand("STOP(True)")
             #if self.__T > 15:
                 #print(self.client.sendCommand("STOP(False)"))
                 #self.__T = 0
