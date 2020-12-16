@@ -53,7 +53,7 @@ class PWM(object):
         ## Setup für Pin-Ausgabe
         
         GPIO.setwarnings(False)
-        GPIO.setmode(GPIO.BOARD)        #Allgemeine Pin-Nummerierung; von oben-links nach unten rechts durchnummeriert von 1 - 40
+        #GPIO.setmode(GPIO.BOARD)        #Allgemeine Pin-Nummerierung; von oben-links nach unten rechts durchnummeriert von 1 - 40
         
         # Setzen der Output-Channel
         
