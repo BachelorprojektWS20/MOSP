@@ -6,10 +6,10 @@ from pmw3901 import PMW3901, BG_CS_FRONT_BCM, BG_CS_BACK_BCM
 
 class Sensor:
     
-    print("""motion.py - Detect flow/motion in front of the PMW3901 sensor.
+    #print("""motion.py - Detect flow/motion in front of the PMW3901 sensor.
 
-    Press Ctrl+C to exit!
-    """)
+    #Press Ctrl+C to exit!
+    #""")
     def __init__(self):
         
         self.meswertLock = threading.Lock()
