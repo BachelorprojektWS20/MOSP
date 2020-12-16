@@ -62,17 +62,18 @@ class MotorControl:
 
             if self.__enableGetSpeed and self.__server.isConnected():
                 step = self.__commandToControl.getCurrentStep()
-                if step[0] > 500:
-                    print("Error:"+ str(step))
-                if step[1] > 360:
-                    print("Error:"+ str(step))
-                if abs(step[2]) > 0.5:
-                    print("Error:"+ str(step))
+                #if step[0] > 500:
+                 #   print("Error:"+ str(step))
+                #if step[1] > 360:
+                 #   print("Error:"+ str(step))
+                #if abs(step[2]) > 0.5:
+                 #   print("Error:"+ str(step))
                 messagesToSend.append(step)
             if self.__enableGetInfo and self.__server.isConnected():
                 messagesToSend.append("Info"+str(self.__control.getInfo()))
             for messageToSend in messagesToSend:
                 self.__server.addItemToSend(messageToSend)
+            self.__server.addItemToSend(self.__commandToControl.getU())
 
     def stop(self):
         self.__messages = []

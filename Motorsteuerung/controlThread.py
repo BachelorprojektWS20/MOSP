@@ -16,6 +16,9 @@ class controlThread:
         self.__umrechner = Umrechnung(10)
         self.__pwm = PWM(VL, VR, HL, HR, modus)
 
+    def getU(self):
+        return self.__pwm.getU()
+
     ''' Setzt die Bewegung auf null, d.h. führt eine Notbremsung durch.
     '''
     def stop(self):
@@ -45,8 +48,8 @@ class controlThread:
                 self.__steps = steps
 
     def getCurrentStep(self):
-        return self.__pwm.getU()
-        #return self.__lastStep
+        #return self.__pwm.getU()
+        return self.__lastStep
 
     def start(self):
         thread = threading.Thread(target=self.__valueLoop)
@@ -72,7 +75,7 @@ class controlThread:
                 step = (0, 0, 0)
             #print(step)
             #Regelung
-            pwmSignals = self.__umrechner.setEingabe((step[0] / 10), step[1], step[2])
+            pwmSignals = self.__umrechner.setEingabe(step[0], step[1], step[2])
             self.__pwm.setU(pwmSignals)
             #self.mock.setMovement(step)
             #self.__lastStep = step
