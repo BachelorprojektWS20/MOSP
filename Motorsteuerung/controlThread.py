@@ -72,7 +72,7 @@ class controlThread:
                 step = (0, 0, 0)
             #print(step)
             #Regelung
-            pwmSignals = self.__umrechner.setEingabe(step[0], step[1], step[2])
+            pwmSignals = self.__umrechner.setEingabe((step[0] / 10), step[1], step[2])
             self.__pwm.setU(pwmSignals)
             #self.mock.setMovement(step)
             #self.__lastStep = step

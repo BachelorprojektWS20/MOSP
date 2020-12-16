@@ -104,9 +104,8 @@ class Test:
             self.directionSend.append(direc)
             self.rotSend.append(rot)
             self.__T += 1
-            if self.__T == 3:
-                pass
-                #self.client.sendCommand("STOP(True)")
+            if self.__T == 5:
+                self.client.sendCommand("STOP(True)")
             #if self.__T > 15:
                 #print(self.client.sendCommand("STOP(False)"))
                 #self.__T = 0
