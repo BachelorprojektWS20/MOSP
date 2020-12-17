@@ -59,15 +59,15 @@ class Umrechnung(object):
         flag = False
         n = 0
         for i in range(4):
-            if uList[i] > self.__uMax:
+            if abs(uList[i]) > self.__uMax:
                 if flag:
-                    if uList[i] >= uList[n]:
+                    if abs(uList[i]) >= abs(uList[n]):
                         n = i
                 else:
                     n = i
                 flag = True
         if flag:
-            x = uList[n]
+            x = abs(uList[n])
             for i in range(4):
                 uList[i] = uList[i]*self.__uMax/x
         return uList

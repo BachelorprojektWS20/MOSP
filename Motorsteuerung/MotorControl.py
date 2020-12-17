@@ -1,5 +1,5 @@
 import time
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import threading
 from Motorsteuerung.MockRegelung import MockRegelung
 from Kommunikation.Server import Server
@@ -26,7 +26,7 @@ class MotorControl:
         self.__server.runServer()
         self.__commandToControl.start()
         while True:
-            time.sleep(0.001)
+            time.sleep(0.1)
             messagesToSend = []
             self.__messages = self.__server.getAnswer()
             self.__currentValues = self.__commandToControl.getCurrentStep()
@@ -62,6 +62,7 @@ class MotorControl:
 
             if self.__enableGetSpeed and self.__server.isConnected():
                 step = self.__commandToControl.getCurrentStep()
+                #print(step)
                 #if step[0] > 500:
                  #   print("Error:"+ str(step))
                 #if step[1] > 360:
@@ -73,7 +74,9 @@ class MotorControl:
                 messagesToSend.append("Info"+str(self.__control.getInfo()))
             for messageToSend in messagesToSend:
                 self.__server.addItemToSend(messageToSend)
-            self.__server.addItemToSend(self.__commandToControl.getU())
+            u = self.__commandToControl.getU()
+            self.__server.addItemToSend(u)
+            #print(u)
 
     def stop(self):
         self.__messages = []

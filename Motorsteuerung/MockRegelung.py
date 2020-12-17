@@ -1,21 +1,21 @@
 import threading
 import time
-from Sensor.readsensor import Sensor
-import matplotlib.pyplot as plt
+#from Sensor.readsensor import Sensor
+#import matplotlib.pyplot as plt
 
 class MockRegelung:
 
     def __init__(self):
 
-        self.sensor = Sensor()
+        #self.sensor = Sensor()
         self.__readSensor = False
         self.__readInfo = False
         self.__mcommands = []
         self.__length = 0
         self.__heading = 0
         self.__speed = 0
-        self.sensorTH = threading.Thread(target = self.sensor.startMeasurment)
-        self.sensorTH.start()
+        #self.sensorTH = threading.Thread(target = self.sensor.startMeasurment)
+        #self.sensorTH.start()
         #self.graphThread = threading.Thread(target = self.graph)
         #self.graphThread.start()
         self.__speedList = [0]
@@ -28,7 +28,8 @@ class MockRegelung:
     def isReadInfo(self):
         return self.__readInfo
     def getMovement(self):
-        return self.sensor.getMeasurment()
+        #return self.sensor.getMeasurment()
+        return(0.0, 0, 0)
     
     def setMovement(self, movement):
         #print(movement)
@@ -38,6 +39,7 @@ class MockRegelung:
             
 
     def getInfo(self):
-        return str(self.sensor.getMeasurment())
+        #return str(self.sensor.getMeasurment())
+        return str((0.0, 0, 0))
 
 

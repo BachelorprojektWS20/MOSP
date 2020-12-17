@@ -16,7 +16,11 @@ class Server:
         IPAddr = socket.gethostbyname(__hostname)
         # print("Your Computer Name is: " + __hostname)
         #print("Your Computer IP Address is: " + IPAddr)
-        ip = '169.254.36.10'
+        #wlan0
+        ip = '192.168.43.10'
+        #eth0
+        #ip = '169.254.30.75'
+        #Andere
         #ip = '192.168.178.5'
         #ip = '127.0.0.1'
         # Socket für die Kommunikation mit der Motorsteuerungsbefehle.
@@ -41,7 +45,11 @@ class Server:
         IPAddr = socket.gethostbyname(__hostname)
         # print("Your Computer Name is: " + __hostname)
         #print("Your Computer IP Address is: " + IPAddr)
-        ip = '169.254.36.181'
+        #wlan0
+        ip = '192.168.43.10'
+        #eth0
+        #ip = '169.254.30.75'
+        #Andere
         #ip = '192.168.178.50'
         #ip = '127.0.0.1'
         # Socket für die Kommunikation mit der Motorsteuerungsbefehle.
