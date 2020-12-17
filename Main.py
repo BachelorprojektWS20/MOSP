@@ -7,9 +7,9 @@ if __name__ == "__main__":
     VR = (14, 15, 17)
     HL = (27, 22, 23)
     HR = (16, 20, 21)
-    #while True:
-        #try:
-    motorSteu = MotorControl( VL, VR, HL, HR, 2)
-    motorSteu.start()
-        #except:
-         #   time.sleep(1)
+    while True:
+        try:
+            motorSteu = MotorControl( VL, VR, HL, HR, 2)
+            motorSteu.start()
+        except:
+            time.sleep(0.5)

@@ -1,10 +1,22 @@
 # first of all import the socket library
 import socket
 import threading
+import fcntl
+import struct
 import uuid
 from Motorsteuerung import MotorControl
 from Motorsteuerung.Commands import checkCommand, commandIsStop, convertStop
 #TODO: Beobachter für die Motorsteuerung!?
+
+'''Source: https://circuitdigest.com/microcontroller-projects/display-ip-address-of-raspberry-pi
+'''
+def get_interface_ipaddress(network):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    return socket.inet_ntoa(fcntl.ioctl(
+        s.fileno(),
+        0x8915,  # SIOCGIFADDR
+        struct.pack('256s', network[:15])
+    )[20:24])
 
 """ Servermodul für die Motorsteuerung.
 """
@@ -17,7 +29,8 @@ class Server:
         # print("Your Computer Name is: " + __hostname)
         #print("Your Computer IP Address is: " + IPAddr)
         #wlan0
-        ip = '192.168.43.10'
+        ip = get_interface_ipaddress(b'wlan0')
+        #ip = '192.168.43.10'
         #eth0
         #ip = '169.254.30.75'
         #Andere
@@ -46,7 +59,8 @@ class Server:
         # print("Your Computer Name is: " + __hostname)
         #print("Your Computer IP Address is: " + IPAddr)
         #wlan0
-        ip = '192.168.43.10'
+        ip = get_interface_ipaddress(b'wlan0')
+        #ip = '192.168.43.10'
         #eth0
         #ip = '169.254.30.75'
         #Andere

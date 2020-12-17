@@ -1,4 +1,6 @@
-
+import socket
+import fcntl
+import struct
 '''
 from  Modes import Modes
 from BewegungsSteuerung import BewegungsSteuerung
@@ -24,6 +26,12 @@ print(((80-270)+180)%360-180)
 #thread.updateSteps(steps)
 #time.sleep(5)
 #thread.updateSteps([(2, 0, 0), (3, 0, 0)])
-import os
-f = os.popen('ifconfig eth0 | grep "inet\ addr" | cut -d: -f2 | cut -d" " -f1')
-your_ip = f.read()
+def get_interface_ipaddress(network):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    return socket.inet_ntoa(fcntl.ioctl(
+        s.fileno(),
+        0x8915,  # SIOCGIFADDR
+        struct.pack('256s', network[:15])
+    )[20:24])
+
+print(get_interface_ipaddress(b'wlan0'))
