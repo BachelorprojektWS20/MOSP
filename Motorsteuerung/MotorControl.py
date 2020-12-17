@@ -79,30 +79,5 @@ class MotorControl:
         self.__messages = []
         self.__commandToControl.stop()
 
-    def graph(self):
-        speed = [0]
-        dire = [0]
-        rot = [0]
-        t = 0
-        while True:
-            curr = self.__currentValues
-            speed.append(curr[0])
-            dire.append(curr[1])
-            rot.append(curr[2])
-            t+=1
-            time.sleep(0.01)
-            if t == 5000:
-                plt.figure()
-                plt.subplot(311)
-                plt.plot(speed, 'k--')
-                plt.title("Speed")
-                plt.subplot(312)
-                plt.plot(dire, 'r--')
-                plt.title("Direction")
-                plt.subplot(313)
-                plt.plot(rot, 'g--')
-                plt.show()
-                t=0
-
 
 

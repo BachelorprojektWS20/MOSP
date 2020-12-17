@@ -17,7 +17,7 @@ class Test:
         self.speedSend = [0]
         self.directionSend = [0]
         self.rotSend = [0]
-        self.client = Client('169.254.36.10')
+        self.client = Client('169.254.36.181')
         #self.client = Client('192.168.178.50')
         self.client.setmaxReconnectAttemps(50)
 
@@ -104,7 +104,7 @@ class Test:
             self.directionSend.append(direc)
             self.rotSend.append(rot)
             self.__T += 1
-            if self.__T == 5:
+            if self.__T == 15:
                 self.client.sendCommand("STOP(True)")
             #if self.__T > 15:
                 #print(self.client.sendCommand("STOP(False)"))

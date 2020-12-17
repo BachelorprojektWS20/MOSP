@@ -35,30 +35,9 @@ class MockRegelung:
         self.__length = movement[0]
         self.__heading = movement[1]
         self.__speed = movement[2]
-        self.__speedList.append(movement[0])
-        self.__direList.append(movement[1])
-        self.__rotList.append(movement[2])
-        if self.timerCounter:
-            self.timerCounter = False
-            timer = threading.Timer(60.0, self.graph)
-            timer.start()
             
 
     def getInfo(self):
         return str(self.sensor.getMeasurment())
-
-    def graph(self):
-        #print("Graph")
-        self.timerCounter = True
-        plt.figure()
-        plt.subplot(311)
-        plt.plot(self.__speedList, 'k--')
-        plt.title("Speeeed")
-        plt.subplot(312)
-        plt.plot(self.__direList, 'r--')
-        plt.title("Direction")
-        plt.subplot(313)
-        plt.plot(self.__rotList, 'g--')
-        plt.show()
 
 
