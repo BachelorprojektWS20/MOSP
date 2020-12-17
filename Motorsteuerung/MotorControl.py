@@ -13,7 +13,8 @@ class MotorControl:
         self.__control = MockRegelung()
         self.__server = Server(self)
         self.__currentValues = (0,0,0)
-        self.movementControl = MotionControl(10, 5, 0.1, 500, 0.5)
+        #
+        self.movementControl = MotionControl(1, 0.1, 0.01, 500, 0.5)
         self.__enableGetSpeed = False
         self.__enableGetInfo = False
         self.__time = 0.05
