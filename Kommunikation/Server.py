@@ -182,6 +182,7 @@ class Server:
                 # Setzen eines Timeouts für die dataconnection Verbindung, um zu überprüfen ob die Client in
                 # angemessener Zeit antwortet. Tut dieser das nicht, wird ein Verbindungsneuaufbau begonnen.
                 self.__dataconnection.settimeout(1.0)
+                #print(self.__itemsToSend)
                 if len(self.__itemsToSend) > 0:
                     item = self.__itemsToSend[0]
                     # Sende Daten.
@@ -209,6 +210,8 @@ class Server:
                 self.__reconnect()
             except ConnectionResetError:
                 self.__reconnect()
+            except OSError:
+                self.__reconnect()
 
     """ Fügt eine Nachricht an die Liste der Zusendenden Nachrichten an.
         Args:   item, die Nachricht als String.
@@ -232,8 +235,15 @@ class Server:
                 self.__isConnected = False
                 try:
                     self.__dataconnection.shutdown(socket.SHUT_RDWR)
+                    self.__dataconnection.close()
+                except OSError as e:
+                    #print(e)
+                    pass
+                try:
                     self.__commandConnection.shutdown(socket.SHUT_RDWR)
-                except OSError:
+                    self.__dataconnection.close()
+                except OSError as e:
+                    #print(e)
                     pass
                 self.__createConnection()
             else:

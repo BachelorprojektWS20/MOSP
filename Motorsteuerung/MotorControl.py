@@ -26,6 +26,7 @@ class MotorControl:
         #plotThread.start()
         self.__server.runServer()
         self.__commandToControl.start()
+        laststep = (0, 0, 0)
         while True:
             time.sleep(0.1)
             messagesToSend = []
@@ -61,16 +62,17 @@ class MotorControl:
                 if Commands.commandIsStop(command):
                     self.__commandToControl.setStop(Commands.convertStop(command))
 
-            if self.__enableGetSpeed and self.__server.isConnected():
+            #if self.__enableGetSpeed and self.__server.isConnected():
+            if self.__server.isConnected():
                 step = self.__commandToControl.getCurrentStep()
-                #print(step)
-                #if step[0] > 500:
-                 #   print("Error:"+ str(step))
+                #if abs(step[0]-laststep[0]) > 10:
+                 #   print("Error: "+ str(step) + str(laststep))
                 #if step[1] > 360:
                  #   print("Error:"+ str(step))
                 #if abs(step[2]) > 0.5:
                  #   print("Error:"+ str(step))
                 messagesToSend.append(step)
+                laststep = step
             if self.__enableGetInfo and self.__server.isConnected():
                 messagesToSend.append("Info"+str(self.__control.getInfo()))
             for messageToSend in messagesToSend:

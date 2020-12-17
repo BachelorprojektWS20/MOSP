@@ -11,5 +11,6 @@ if __name__ == "__main__":
         try:
             motorSteu = MotorControl( VL, VR, HL, HR, 2)
             motorSteu.start()
-        except:
+        except Exception as e:
+            print(e)
             time.sleep(0.5)

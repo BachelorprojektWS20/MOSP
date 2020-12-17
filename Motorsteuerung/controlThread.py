@@ -23,6 +23,7 @@ class controlThread:
     '''
     def stop(self):
         with self.__stopLock:
+            self.__steps = [(0, 0, 0)]
             self.__stop = True
             self.mock.setMovement((0, 0, 0))
 
