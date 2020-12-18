@@ -46,6 +46,7 @@ class PWM(object):
         self.__uHL = 0
         self.__uHR = 0
         
+        self.__fList = []
         ## Bestimme Anzahl der Schritte pro Umdrehung
         
         self.__schritte = 200 * modus
@@ -115,7 +116,9 @@ class PWM(object):
     # u: 4er Tupel in der Reihenfolge VL,VR,HL,HR
     
     def getU(self):
-        return (self.__uVL,self.__uVR,self.__uHL,self.__uHR)
+        #return (self.__uVL,self.__uVR,self.__uHL,self.__uHR)
+        print(self.__fList)
+        return self.__fList
     
     ## Liest neue Umdrehungszahlen ein, rechnet sie um und erzeugt das PWM-Signale.
     ## Setzt außerdem die CW/CCW Signale entsprechend der Vorzeichen der Umdrehungssignale
@@ -133,7 +136,7 @@ class PWM(object):
         f = []
         for element in u:
             f.append(element * self.__schritte)
-        
+        self.__fList = f
         # Setzen der Frequenz
         
         for i in range(4):

@@ -40,8 +40,8 @@ class Umrechnung(object):
         # Ohne Rotation gilt zudem: w1 = w3 & w2 = w4
         # Zerlegung von vBetrag in vX und vY erlaubt Lösung des Gleichungssystems
         
-        uVL = (math.cos(winkel)+math.sin(winkel))*vBetrag/Umrechnung.__radius
-        uVR = (math.cos(winkel)-math.sin(winkel))*vBetrag/Umrechnung.__radius
+        uVL = (math.cos(winkel)+math.sin(winkel))*vBetrag/(Umrechnung.__radius*2*math.pi)
+        uVR = (math.cos(winkel)-math.sin(winkel))*vBetrag/(Umrechnung.__radius*2*math.pi)
         uHL = uVR
         uHR = uVL
         
