@@ -76,7 +76,6 @@ class controlThread:
                 step = (0, 0, 0)
             #print(step)
             #Regelung
-            print(step)
             pwmSignals = self.__umrechner.setEingabe(step[0]/100, step[1], step[2])
             self.__pwm.setU(pwmSignals)
             #print(step)

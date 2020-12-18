@@ -117,7 +117,6 @@ class PWM(object):
     
     def getU(self):
         #return (self.__uVL,self.__uVR,self.__uHL,self.__uHR)
-        print(self.__fList)
         return self.__fList
     
     ## Liest neue Umdrehungszahlen ein, rechnet sie um und erzeugt das PWM-Signale.
