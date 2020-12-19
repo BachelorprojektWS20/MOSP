@@ -19,10 +19,11 @@ class Client:
         self.__commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Socket für die Kommunikation von Messdaten
         self.__dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        #TODO do you need a lock?
+        #
         self.__connectionID = 0
         self.__reconnectLock = threading.Lock()
         self.__isConnected = False
+        # Variablen für den
         self.__itemsToSendLock = threading.Lock()
         self.__itemsToSend = []
         self.__messagesReceivedLock = threading.Lock()
