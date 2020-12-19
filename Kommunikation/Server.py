@@ -39,7 +39,7 @@ class Server:
         self.__itemsToSend = []
         self.__messagesReceivedLock = threading.Lock()
         self.__messagesReceived = []
-        if not isinstance(self.__motorControl, MotorControl.MotorControl):
+        if not isinstance(motorControl, MotorControl.MotorControl):
             raise AttributeError("Der übergabe Parameter muss vom Typ Motorkontrolle sein")
         self.__motorControl = motorControl
 
@@ -142,6 +142,8 @@ class Server:
             except BrokenPipeError:
                 self.__reconnect()
             except ConnectionResetError:
+                self.__reconnect()
+            except OSError:
                 self.__reconnect()
 
     """ Sendet die Daten an den verbundenen Clienten. Hier zu zählen zum eine Warnungen oder
