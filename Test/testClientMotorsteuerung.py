@@ -91,8 +91,8 @@ class Test:
                 #speed = random.randint(0, 49) * 10
                 #direc = random.randint(0, 359)
                 #rot = random.randint(-49, 49) * 0.01
-                speed = 10
-                direc = 180
+                speed = 0
+                direc = 0
                 rot = 0
                 self.speedSend.append(speed)
                 self.directionSend.append(direc)
@@ -109,7 +109,8 @@ class Test:
                 self.rotSend.append(rot)
                 self.__T += 1
                 if self.__T == 15:
-                    self.client.sendCommand("STOP(True)")
+                    #self.client.sendCommand("STOP(True)")
+                    pass
                 if self.__T > 20:
                     print(self.client.sendCommand("STOP(False)"))
                     self.__T = 0
