@@ -17,13 +17,16 @@ class Test:
         self.speedSend = [0]
         self.directionSend = [0]
         self.rotSend = [0]
-        self.client = Client('169.254.36.181')
+        self.client = Client('192.168.178.50')
         #self.client = Client('192.168.178.50')
-        self.client.setmaxReconnectAttemps(50)
+        self.client.setmaxReconnectAttemps(10)
+        self.plotThread = threading.Thread(target=self.graph)
+        self.clientTH = threading.Thread(target=self.client.runClient)
 
     def graph(self):
         #print("Graph")
         while True:
+            time.sleep(5)
             messages = self.client.getAndResetReceivedMessages()
             #print(messages)
             for message in messages:
@@ -50,7 +53,7 @@ class Test:
                     self.ySensor.append(commandValue[2])
                 else:
                     print(message)
-            time.sleep(1)
+
             plt.figure()
             plt.subplot(611)
             plt.plot(self.speed, 'k--')
@@ -74,44 +77,49 @@ class Test:
 
     def run(self):
 
-        plotThread = threading.Thread(target=self.graph)
-        plotThread.start()
-        clientTH = threading.Thread(target=self.client.runClient)
-        clientTH.start()
-        time.sleep(0.1)
+        self.plotThread.start()
+        self.clientTH.start()
+        time.sleep(1)
         #cmdList = [ "ChangeSpeed(100,180,0.45)","ChangeSpeed(100,90,0.45)"]
         #print("Server answer:")
         self.client.sendCommand("GetInfo(True)")
         self.client.sendCommand("GetSpeed(True)")
         self.client.sendCommand("STOP(False)")
+        try:
+            while True:
 
-        while True:
-
-            speed = random.randint(0, 49) * 10
-            direc = random.randint(0, 359)
-            rot = random.randint(-49, 49) * 0.01
-            self.speedSend.append(speed)
-            self.directionSend.append(direc)
-            self.rotSend.append(rot)
-            cmd = "ChangeSpeed(" + str(speed) + "," + str(direc) + "," + str(rot) + ")"
-            #print("Command:" + cmd)
-            #cmd = input()
-            serverAnswer = self.client.sendCommand(cmd)
-            #print("Server answer:")
-            #rint(serverAnswer)
-            time.sleep(1)
-            self.speedSend.append(speed)
-            self.directionSend.append(direc)
-            self.rotSend.append(rot)
-            self.__T += 1
-            if self.__T == 15:
-                self.client.sendCommand("STOP(True)")
-            #if self.__T > 15:
-                #print(self.client.sendCommand("STOP(False)"))
-                #self.__T = 0
-
+                #speed = random.randint(0, 49) * 10
+                #direc = random.randint(0, 359)
+                #rot = random.randint(-49, 49) * 0.01
+                speed = 10
+                direc = 180
+                rot = 0
+                self.speedSend.append(speed)
+                self.directionSend.append(direc)
+                self.rotSend.append(rot)
+                cmd = "ChangeSpeed(" + str(speed) + "," + str(direc) + "," + str(rot) + ")"
+                #print("Command:" + cmd)
+                #cmd = input()
+                serverAnswer = self.client.sendCommand(cmd)
+                #print("Server answer:")
+                #rint(serverAnswer)
+                time.sleep(1)
+                self.speedSend.append(speed)
+                self.directionSend.append(direc)
+                self.rotSend.append(rot)
+                self.__T += 1
+                if self.__T == 15:
+                    self.client.sendCommand("STOP(True)")
+                if self.__T > 20:
+                    print(self.client.sendCommand("STOP(False)"))
+                    self.__T = 0
+        except Exception as e:
+            print(e)
+            self.client.endConnectionToServer()
 
 test = Test()
 test.run()
+
+
 
 
