@@ -3,7 +3,6 @@ import threading
 import fcntl
 import struct
 import uuid
-import time
 from Motorsteuerung import MotorControl
 from Motorsteuerung.Commands import checkCommand, commandIsStop, convertStop
 
@@ -27,13 +26,13 @@ class Server:
         # Abrufen der IP Adresse des Raspberry PIs
         # b'wlan0' - Wlan IP Adresse
         # b'eth0' - Ethernet IP Adresse
-        self.ip = get_interface_ipaddress(b'wlan0')
+        ip = get_interface_ipaddress(b'wlan0')
         # Socket für die Kommunikation mit der Motorsteuerungsbefehle.
         self.__commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.__commandSocket.bind((self.ip, 4001))
+        self.__commandSocket.bind((ip, 4001))
         # Socket für die Kommunikation von Messdaten
         self.__dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.__dataSocket.bind((self.ip, 4002))
+        self.__dataSocket.bind((ip, 4002))
         self.__conn = ''
         self.__answer = '0'
         self.__reconnectLock = threading.Lock()
@@ -56,7 +55,9 @@ class Server:
     """
     def __createConnection(self):
         if not self.__isConnected:
-            #print("Conn")
+            print("Conn")
+            print(self.__commandConnection)
+            print(self.__dataConnection)
             # Warten auf eine neue Verbindung von einem CLienten.
             self.__commandSocket.listen()
             self.__dataSocket.listen()
@@ -66,8 +67,6 @@ class Server:
             self.__connectionID = id(self.__commandConnection)
             self.__commandConnection.settimeout(None)
             self.__dataConnection.settimeout(None)
-            #print(self.__commandConnection)
-            #print(self.__dataConnection)
             #TODO: Benötigt?
             #self.__itemsToSendLock = threading.Lock()
             #self.__messagesReceivedLock = threading.Lock()
@@ -122,7 +121,7 @@ class Server:
         while self.__isConnected:
             try:
                 # Empfangen eines Komandos für die Motorsteuerung.
-                self.__commandConnection.settimeout(5)
+                self.__commandConnection.settimeout(15)
                 cmd = self.__commandConnection.recv(1024)
                 # Überprüfung des Commandos auf syntaktische Korrektheit
                 command = str(cmd.decode("utf-8"))
@@ -145,7 +144,7 @@ class Server:
                     answer = str(id)
                 # Antwort für den Clienten ob das Kommando korrekt war. Falls das Kommando korrekt ist und an die
                 # Motorsteuerung weitergegeben wird, wird eine ID zurückgegeben.
-                self.__commandConnection.settimeout(5)
+                self.__commandConnection.settimeout(1.0)
                 self.__commandConnection.sendall(answer.encode('utf-8'))
                 self.__commandConnection.settimeout(None)
             # Sollte die Verbindung getrennt werden wird ein Verbindungsaufbau begonnen.
@@ -169,26 +168,22 @@ class Server:
     def __startSendingData(self):
         while self.__isConnected:
             try:
-                #print("Send to"+ str(self.__dataConnection))
                 # Setzen eines Timeouts für die dataconnection Verbindung, um zu überprüfen ob die Client in
                 # angemessener Zeit antwortet. Antworted dieser nicht, wird ein Verbindungsneuaufbau begonnen.
                 self.__dataConnection.settimeout(5.0)
                 if len(self.__itemsToSend) > 0:
                     item = self.__itemsToSend[0]
                     # Senden der Nachricht an den CLienten.
-                    self.__dataConnection.send(item.encode('utf-8'))
+                    self.__dataConnection.sendall(item.encode('utf-8'))
                     # Warte auf die Bestaetigung des Clientens.
                     answer = self.__dataConnection.recv(1024)
                     # Entfernen der gesendeten Nachricht aus der List der zu sendenden Nachrichten.
                     if answer == b'Recived':
                         with self.__itemsToSendLock:
                             self.__itemsToSend.pop(0)
-                    else:
-                        #print("!!!!!!!!!!!!")
-                        self.__reconnect()
                 else:
                     item = "None"
-                    self.__dataConnection.send(item.encode('utf-8'))
+                    self.__dataConnection.sendall(item.encode('utf-8'))
                     answer = self.__dataConnection.recv(1024)
             # Abfangen aller Fehler welche beim Senden durch einen Verbindungsabbruch auftreten können. Tritt ein
             # Verbindungsabbruch auf wird ein Verbindungsneuaufbau begonnen.
@@ -216,16 +211,12 @@ class Server:
         gleichzeitig eine Neuverbindung warten.
     """
     def __reconnect(self):
-        #print("Reco:")
-        #print(self.__commandConnection)
-        #print(self.__dataConnection)
         if isinstance(self.__motorControl, MotorControl.MotorControl):
             self.__motorControl.stop()
         currentConnectionID = self.__connectionID
         with self.__reconnectLock:
             if self.__isConnected and self.__connectionID == currentConnectionID:
                 self.__isConnected = False
-                #print("Stop connections")
                 try:
                     self.__dataConnection.shutdown(socket.SHUT_RDWR)
                 except OSError as e:
@@ -246,10 +237,10 @@ class Server:
                 except OSError as e:
                     #print(e)
                     pass
+                try:
+                    self.__
                 self.__createConnection()
             else:
-                #time.sleep(10)
-                #print("PASS")
                 pass
 
     """ Abrufen der Nachrichten, welche vom Clienten gesendet wurden und löscht die gesamte List der Empfangenen

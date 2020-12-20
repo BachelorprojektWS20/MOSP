@@ -83,6 +83,7 @@ class MotorControl:
             for messageToSend in messagesToSend:
                 self.__server.addItemToSend(messageToSend)
             u = self.__commandToControl.getU()
+            #print(u)
             self.__server.addItemToSend(u)
 
     ''' Führt einen Not-Stop der Plattform durch.
