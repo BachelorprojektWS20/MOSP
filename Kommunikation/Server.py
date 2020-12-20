@@ -61,6 +61,8 @@ class Server:
             self.__dataConnection, dataAddress = self.__dataSocket.accept()
             self.__isConnected = True
             self.__connectionID = id(self.__commandConnection)
+            self.__commandConnection.settimeout(None)
+            self.__dataConnection.settimeout(None)
             #TODO: Benötigt?
             #self.__itemsToSendLock = threading.Lock()
             #self.__messagesReceivedLock = threading.Lock()
@@ -116,6 +118,8 @@ class Server:
                 # Empfangen eines Komandos für die Motorsteuerung.
                 command = str(self.__commandConnection.recv(1024).decode("utf-8"))
                 # Überprüfung des Commandos auf syntaktische Korrektheit
+                if not command:
+                    raise ConnectionAbortedError("No connection.")
                 if not checkCommand(command):
                     answer = "Invalid Command: " + command
                 else:
@@ -135,7 +139,9 @@ class Server:
                     answer = str(id)
                 # Antwort für den Clienten ob das Kommando korrekt war. Falls das Kommando korrekt ist und an die
                 # Motorsteuerung weitergegeben wird, wird eine ID zurückgegeben.
+                self.__commandConnection.settimeout(1.0)
                 self.__commandConnection.sendall(answer.encode('utf-8'))
+                self.__commandConnection.settimeout(None)
             # Sollte die Verbindung getrennt werden wird ein Verbindungsaufbau begonnen.
             except ConnectionAbortedError:
                 self.__reconnect()
@@ -164,6 +170,8 @@ class Server:
                     # Warte auf die Bestaetigung des Clientens.
                     answer = self.__dataConnection.recv(1024)
                     # Entfernen der gesendeten Nachricht aus der List der zu sendenden Nachrichten.
+                    if not answer:
+                        raise ConnectionAbortedError("No connection.")
                     if answer == b'Recived':
                         with self.__itemsToSendLock:
                             self.__itemsToSend.pop(0)
@@ -207,18 +215,22 @@ class Server:
                 try:
                     self.__dataConnection.shutdown(socket.SHUT_RDWR)
                 except OSError as e:
+                    #print("1"+str(e))
                     pass
                 try:
                     self.__dataConnection.close()
                 except OSError as e:
+                    #print("2"+str(e))
                     pass
                 try:
                     self.__commandConnection.shutdown(socket.SHUT_RDWR)
                 except OSError as e:
+                    #print("3"+str(e))
                     pass
                 try:
                     self.__commandConnection.close()
                 except OSError as e:
+                    #print(e)
                     pass
                 self.__createConnection()
             else:
