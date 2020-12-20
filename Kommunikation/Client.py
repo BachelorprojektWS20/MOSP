@@ -33,6 +33,9 @@ class Client:
         self.__maxReconnectAttemps = 10
         self.__run = True
 
+    def getSockets(self):
+        print(self.__commandSocket)
+        print(self.__dataSocket)
     """ Falls der Client beim ersten versuch eines Reconnects scheitert kann mit diesem Parameter gesteuert werden wie 
         oft dieser einen Reconnect versucht. Standardeinstellung sind 10.
         
@@ -71,14 +74,14 @@ class Client:
                 self.__itemsToSendLock = threading.Lock()
                 self.__messagesReceivedLock = threading.Lock()
             except (ConnectionRefusedError, OSError):
-                if not self.__maxReconnectAttemps < self.__reconnectCounter:
-                    time.sleep(1)
-                    self.__reconnectCounter = self.__reconnectCounter + 1
-                    self.__createConnection()
-                else:
-                    self.__reconnectCounter = 0
-                    raise RuntimeError("Can't connect to Server, check if Server is running. Attempted " +
-                                       str(self.__maxReconnectAttemps) + " reconnects.")
+                raise RuntimeError("Can't connect to Server, check if Server is running.")
+                #if not self.__maxReconnectAttemps < self.__reconnectCounter:
+                 #   time.sleep(1)
+                  #  self.__reconnectCounter = self.__reconnectCounter + 1
+                   # self.__reconnect()
+                #else:
+                 #   self.__reconnectCounter = 0
+
         else:
             raise RuntimeError('There is already a connection to Client established.')
 
@@ -111,7 +114,8 @@ class Client:
         while self.__isConnected and self.__run:
             try:
                 # Empfangen einer Nachricht vom Server.
-                command = str(self.__dataSocket.recv(1024).decode("utf-8"))
+                answer = self.__dataSocket.recv(1024)
+                command = str(answer.decode("utf-8"))
                 with self.__messagesReceivedLock:
                     if command != 'None':
                         self.__messagesReceived.append(str(command))
@@ -129,6 +133,8 @@ class Client:
             except OSError:
                 self.__reconnect()
             except ConnectionResetError:
+                self.__reconnect()
+            except OSError:
                 self.__reconnect()
         if not self.__isConnected and self.__run:
             raise RuntimeError("Client is not connected to a server yet!")
@@ -176,10 +182,15 @@ class Client:
                 answer = "Server wasn't rechable"
             except ConnectionResetError:
                 self.__reconnect()
+            except OSError:
+                self.__reconnect()
         elif not self.__isConnected and self.__run:
-            raise RuntimeError("Clienten is not connected to a server yet!")
+            self.__reconnect()
+            #raise RuntimeError("Clienten is not connected to a server yet!")
         else:
-            self.endConnectionToServer()
+            self.__reconnect()
+            #raise RuntimeError("Clienten is not connected to a server yet!")
+            #self.endConnectionToServer()
 
     """ Endeckt eine der Kommunikationsfunktionen das die Verbindung zum Server getrennt wurde, versucht die Funktion
         einen Neuaufbau mit diesem.
@@ -192,13 +203,23 @@ class Client:
             if self.__isConnected and self.__connectionID == currentConnectionID and self.__run:
                 self.__isConnected = False
                 try:
-                    self.__commandSocket.shutdown(socket.SHUT_RDWR)
                     self.__dataSocket.shutdown(socket.SHUT_RDWR)
-                    self.__commandSocket = socket.socket()
-                    self.__dataSocket = socket.socket()
-                except OSError:
-                    print("OSError")
+                except OSError as e:
                     pass
+                try:
+                    self.__dataSocket.close()
+                except OSError as e:
+                    pass
+                try:
+                    self.__commandSocket.shutdown(socket.SHUT_RDWR)
+                except OSError as e:
+                    pass
+                try:
+                    self.__commandSocket.close()
+                except OSError as e:
+                    pass
+                self.__dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.__commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.__createConnection()
             elif (not self.__isConnected) and self.__connectionID == currentConnectionID and self.__run:
                 self.__isConnected = False
@@ -240,16 +261,22 @@ class Client:
     """
     def endConnectionToServer(self):
         with self.__reconnectLock:
-            if self.__isConnected:
-                self.__isConnected = False
-                try:
-                    self.__dataSocket.shutdown(socket.SHUT_RDWR)
-                    self.__dataSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    self.__commandSocket.shutdown(socket.SHUT_RDWR)
-                    self.__commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    self.__run = False
-                    print("Connection Ended")
-                except OSError as e:
-                    pass
-            else:
-                raise RuntimeError("The server isn't connected, can't end a non existing connection!")
+            self.__isConnected = False
+            try:
+                self.__dataSocket.shutdown(socket.SHUT_RDWR)
+            except OSError as e:
+                pass
+            try:
+                self.__dataSocket.close()
+            except OSError as e:
+                pass
+            try:
+                self.__commandSocket.shutdown(socket.SHUT_RDWR)
+            except OSError as e:
+                pass
+            try:
+                self.__commandSocket.close()
+            except OSError as e:
+                pass
+            self.__run = False
+            print("Connection Ended")
