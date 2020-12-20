@@ -2,6 +2,9 @@ import numpy
 from Motorsteuerung.Modes import Modes
 from Motorsteuerung.Commands import convertChangeSpeed
 
+''' Klasse zur erstellung von Bewegungsprofilen für die Direkte Steuerung.
+    Geplant: Polygonzug verfahren.
+'''
 class MotionControl:
 
     ''' Konstruktor in dem die Parameter der MotionControl festgelegt werden

@@ -3,7 +3,8 @@ import socket
 import threading
 import time
 
-
+''' Die Klienten Klasse dient zur Kommunikation mit dem Server welche auf dem Raspberry PI lauft.
+'''
 class Client:
     
     """ Konstruktor der Client-Klasse.

@@ -1,4 +1,3 @@
-# first of all import the socket library
 import socket
 import threading
 import fcntl
@@ -6,9 +5,10 @@ import struct
 import uuid
 from Motorsteuerung import MotorControl
 from Motorsteuerung.Commands import checkCommand, commandIsStop, convertStop
-#TODO: Beobachter für die Motorsteuerung!?
 
-'''Source: https://circuitdigest.com/microcontroller-projects/display-ip-address-of-raspberry-pi
+
+''' Funktion zum bestimmen der IP Adressedes Raspberry PIs.
+    Quelle: https://circuitdigest.com/microcontroller-projects/display-ip-address-of-raspberry-pi
 '''
 def get_interface_ipaddress(network):
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

@@ -7,6 +7,8 @@ from Motorsteuerung import Commands
 from Motorsteuerung.MotionControl import MotionControl
 from Motorsteuerung.controlThread import controlThread
 
+''' Klasse welche als verbindungs Modul für Steuerung der Motoren und des Server-Client Modul dient. 
+'''
 class MotorControl:
 
     ''' Konstruktor der Motor Kontrolle.
