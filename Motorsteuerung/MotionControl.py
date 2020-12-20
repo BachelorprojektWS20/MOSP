@@ -1,10 +1,17 @@
 import numpy
 from Motorsteuerung.Modes import Modes
 from Motorsteuerung.Commands import convertChangeSpeed
-#TODO: Übersetzten ins Englishe!
 
 class MotionControl:
 
+    ''' Konstruktor in dem die Parameter der MotionControl festgelegt werden
+        Args:   maximumAcceleration, ist die maximale Beschleunigung der Plattform in cm/s^2
+                maximumDirectionChange, ist die maximale Richtungsänderung der Geschwindigkeit wenn die Plattform in
+                    Bewegung ist in Grad
+                maximumAngularAcceleration, ist die maximale Rotationsbeschleunigung in rad/s^2
+                maximumSpeed, ist die maximale Geschwindigkeit der Plattform in cm/s
+                maximumRotation, ist die maximale Rotationsgeschwindigkeit in rad/s
+    '''
     def __init__(self, maximumAcceleration, maximumDirectionChange, maximumAngularAcceleration,
                  maximumSpeed, maximumRotation):
         self.__maximumAcceleration = maximumAcceleration
@@ -14,7 +21,7 @@ class MotionControl:
         self.maximumRotation = maximumRotation
         self.mode = Modes.DIRECT
 
-    ''' Verändert den Steuermodus des Roboers. Aktuell nur die direkte Kontrolle implementiert
+    ''' Verändert den Steuermodus des Roboers. Aktuell nur die direkte Kontrolle implementiert.
         Args: mode, den Modus in den die Bewegungssteuerung wechseln soll. Variable muss ein Enum des Types Modes sein.
     '''
     def changeMode(self, mode):
@@ -45,8 +52,7 @@ class MotionControl:
         else:
             raise RuntimeError("Die Bewegungssteuerung für den Polygonzug ist nocht nicht implementiert!")
 
-    # TODO: Festlegen der Parameter
-    ''' 
+    ''' Berechnet einen Bewegungsschritt von einem zum nächsten Wert.
         Args: zielWerte, ist ein Tupel mit drei Werten in folgender Reihenfolge:
                 (zielGeschwindigkeit, zielRichtung, zielRotation)
                 Diese beschreiben die gewünschte Bewegung dse Fahrzeugs

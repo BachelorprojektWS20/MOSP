@@ -1,5 +1,8 @@
 from Kommunikation.Server import Server
 
+''' Test Script für die Kommandoklasse 
+'''
+
 server = Server()
 assert server.checkCommand("ChangeSpeed(100,100,100000)") is True
 assert server.checkCommand("ChangeSpeed(100,100,100A00)") is False

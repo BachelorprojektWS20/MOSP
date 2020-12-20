@@ -1,6 +1,8 @@
 from Motorsteuerung.MotionControl import MotionControl
 from Motorsteuerung import Commands
 
+''' Kleines Testscript für die Bewegungssteuerung.
+'''
 test = MotionControl(1, 1, 0.1, 100, 0.5)
 try:
     test.calculateNewMovementValues((0, 0, 0), (10, -355, -0.1))

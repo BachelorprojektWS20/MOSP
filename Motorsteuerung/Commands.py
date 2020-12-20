@@ -1,11 +1,12 @@
 import re
 from Motorsteuerung.Modes import Modes
-""" Überprüft ob die Befehle Syntaktisch korrekt sind.
+
+""" Überprüft ob der Befehl syntaktisch korrekt ist und zu der Menge der zugelassenen Befehle gehört.
     Args: command, der zu überprüfende Befehl als String.
     Return: Boolean des Ergebnisses.
 """
 def checkCommand(command):
-    # Accepts the following Command; ChangeSpeed(Number,Number,Number)
+    # Accepts the following Command; ChangeSpeed(Speed,Direction,Rotation)
     if commandIsChangeSpeed(command):
         return True
     # Accepts the following Command: Polygonzug[(ID,Strecke,Richtung,Max Geschwindigkeit)(..)..]
@@ -137,7 +138,7 @@ def commandIsGetInfo(command):
 
 ''' Konvertiert den übergebenen Befehl ChangeSpeed in ein Tupel aus den drei Steuerungswerten.
     Args: command, ChangeSpeed Kommando welches als String vorliegt
-    Returns: Tupel aus drei Steuerungswerten.
+    Returns: Tupel aus drei Steuerungswerten mit ( Geschwindigkeit in cm/s, Richtung in Grad, Drehung in Rad/s).
     Raises: ValueError, wenn der Kommand nicht dem ChangeSpeed-Kommandoformat entspricht
 '''
 def convertChangeSpeed(command):

@@ -4,12 +4,11 @@ import threading
 import argparse
 from pmw3901 import PMW3901, BG_CS_FRONT_BCM, BG_CS_BACK_BCM
 
-class Sensor:
-    
-    #print("""motion.py - Detect flow/motion in front of the PMW3901 sensor.
 
-    #Press Ctrl+C to exit!
-    #""")
+class Sensor:
+
+    ''' Initialisierung des Sensors
+    '''
     def __init__(self):
         
         self.meswertLock = threading.Lock()
@@ -28,7 +27,10 @@ class Sensor:
         self.tx = 0
         self.ty = 0
         self.timeStart = timer()
-        
+
+    ''' Starten der Messwertaufnahme. Hier werden alle 0.1s die Messwerte des Sensors abgefragt und die einzel Messwerte
+        aufaddiert.
+    '''
     def startMeasurment(self):
         try:
             while True:
@@ -42,6 +44,12 @@ class Sensor:
                 time.sleep(0.1)
         except KeyboardInterrupt:
             pass
+
+    ''' Gibt die x/y verschiebung des Sensors in Pixel an. Desweiteren liefert diese Funktion auch die Zeit zwischen der
+        letzten und aktuellen Abfrage der Messwerte, welche Softwareseitig gemsessen wurde.
+        Returns:    Tupel aus drei Weren, als erstes die Zeit in s, dann die x verschiebung des Sensor, dann die y 
+                    verschiebung des Sensors.
+    '''
     def getMeasurment(self):
         with self.meswertLock:
             measuretime = timer() - self.timeStart

@@ -23,7 +23,9 @@ def get_interface_ipaddress(network):
 class Server:
 
     def __init__(self, motorControl):
-        #wlan0
+        # Abrufen der IP Adresse des Raspberry PIs
+        # b'wlan0' - Wlan IP Adresse
+        # b'eth0' - Ethernet IP Adresse
         ip = get_interface_ipaddress(b'wlan0')
         # Socket für die Kommunikation mit der Motorsteuerungsbefehle.
         self.__commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

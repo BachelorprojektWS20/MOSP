@@ -5,6 +5,8 @@ import time
 from Kommunikation.Client import Client
 import matplotlib.pyplot as plt
 
+''' Test Klasse für die Wlan Kommunikation zwischen einem Clienten und dem Raspberry PI.
+'''
 class Test:
     def __init__(self):
         self.__T = 0

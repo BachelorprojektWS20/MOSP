@@ -9,11 +9,21 @@ from Motorsteuerung.controlThread import controlThread
 
 class MotorControl:
 
+    ''' Konstruktor der Motor Kontrolle.
+    Args:   VL: 3er Tupel mit den Pin Nummern der Anschlüsse fürs Rad vorne links in der Reihenfolge PWM-Signal,
+                CW/CCW,enable
+            VR: 3er Tupel mit den Pin Nummern der Anschlüsse fürs Rad vorne rechts in der Reihenfolge PWM-Signal,
+            CW/CCW,enable
+            HL: 3er Tupel mit den Pin Nummern der Anschlüsse fürs Rad hinten links in der Reihenfolge PWM-Signal,
+                CW/CCW,enable
+            HL: 3er Tupel mit den Pin Nummern der Anschlüsse fürs Rad hinten rechts in der Reihenfolge PWM-Signal,
+                CW/CCW,enable
+            modus: Verwendeter Schrittmodus; 1 für Ganzschritte, 2 für Halbschritte, 4 für Viertelschritte, etc.
+    '''
     def __init__(self, VL, VR, HL, HR, modus):
         self.__control = MockRegelung()
         self.__server = Server(self)
         self.__currentValues = (0,0,0)
-        #
         self.movementControl = MotionControl(1, 0.1, 0.01, 500, 0.5)
         self.__enableGetSpeed = False
         self.__enableGetInfo = False
@@ -21,9 +31,11 @@ class MotorControl:
         self.__commandToControl = controlThread( VL, VR, HL, HR, modus)
         self.__messages = []
 
+    ''' Starten der Motorkontrolle, d.h erzeugen und starten des Servers für die Kommunikation. Desweiteren das erzeugen
+        und starten der Bewegungskontrolle welche die Bewegungswerte an die Motoren weitergibt. Diese Funktion läuft in
+        einer Endlosschleife.
+    '''
     def start(self):
-        #plotThread = threading.Thread(target=self.graph)
-        #plotThread.start()
         self.__server.runServer()
         self.__commandToControl.start()
         laststep = (0, 0, 0)
@@ -38,7 +50,6 @@ class MotorControl:
                 if Commands.commandIsChangeSpeed(command):
                     try:
                         steps = self.movementControl.calculateMovementChange(command, self.__commandToControl.getCurrentStep())
-                        #TODO:
                         self.__commandToControl.updateSteps(steps)
                     except ValueError as error:
                         messagesToSend.append((str(id), str(error)))
@@ -61,16 +72,8 @@ class MotorControl:
                         messagesToSend.append((str(id), str(error)))
                 if Commands.commandIsStop(command):
                     self.__commandToControl.setStop(Commands.convertStop(command))
-
-            #if self.__enableGetSpeed and self.__server.isConnected():
             if self.__server.isConnected():
                 step = self.__commandToControl.getCurrentStep()
-                #if abs(step[0]-laststep[0]) > 10:
-                 #   print("Error: "+ str(step) + str(laststep))
-                #if step[1] > 360:
-                 #   print("Error:"+ str(step))
-                #if abs(step[2]) > 0.5:
-                 #   print("Error:"+ str(step))
                 messagesToSend.append(step)
                 laststep = step
             if self.__enableGetInfo and self.__server.isConnected():
@@ -79,8 +82,9 @@ class MotorControl:
                 self.__server.addItemToSend(messageToSend)
             u = self.__commandToControl.getU()
             self.__server.addItemToSend(u)
-            #print(u)
 
+    ''' Führt einen Not-Stop der Plattform durch.
+    '''
     def stop(self):
         self.__messages = []
         self.__commandToControl.stop()
