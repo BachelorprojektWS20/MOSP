@@ -28,7 +28,7 @@ class Test:
     def graph(self):
         #print("Graph")
         while True:
-            time.sleep(5)
+            time.sleep(7)
             messages = self.client.getAndResetReceivedMessages()
             #print(messages)
             for message in messages:
@@ -84,16 +84,17 @@ class Test:
         time.sleep(1)
         #cmdList = [ "ChangeSpeed(100,180,0.45)","ChangeSpeed(100,90,0.45)"]
         #print("Server answer:")
-        self.client.sendCommand("GetInfo(True)")
-        self.client.sendCommand("GetSpeed(True)")
+        #self.client.sendCommand("GetInfo(True)")
+        #self.client.sendCommand("GetSpeed(True)")
         self.client.sendCommand("STOP(False)")
         try:
             while True:
 
-                #speed = random.randint(0, 49) * 10
+                d = self.client.sendCommand("STOP(False)")
+                speed = random.randint(0, 5) * 5
                 #direc = random.randint(0, 359)
                 #rot = random.randint(-49, 49) * 0.01
-                speed = 0
+                #speed = 45
                 direc = 0
                 rot = 0
                 self.speedSend.append(speed)
@@ -105,7 +106,8 @@ class Test:
                 serverAnswer = self.client.sendCommand(cmd)
                 #print("Server answer:")
                 #rint(serverAnswer)
-                time.sleep(1)
+                time.sleep(3)
+                self.client.getSockets()
                 self.speedSend.append(speed)
                 self.directionSend.append(direc)
                 self.rotSend.append(rot)
@@ -114,11 +116,11 @@ class Test:
                     #self.client.sendCommand("STOP(True)")
                     pass
                 if self.__T > 20:
-                    print(self.client.sendCommand("STOP(False)"))
+                    d = self.client.sendCommand("STOP(False)")
                     self.__T = 0
         except Exception as e:
             print(e)
-            self.client.endConnectionToServer()
+            #self.client.endConnectionToServer()
 
 test = Test()
 test.run()
