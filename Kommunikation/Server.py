@@ -27,7 +27,7 @@ class Server:
         # Abrufen der IP Adresse des Raspberry PIs
         # b'wlan0' - Wlan IP Adresse
         # b'eth0' - Ethernet IP Adresse
-        self.ip = get_interface_ipaddress(b'wlan0')
+        self.ip = get_interface_ipaddress(b'eth0')
         # Socket für die Kommunikation mit der Motorsteuerungsbefehle.
         self.__commandSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.__commandSocket.bind((self.ip, 4001))
